@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27428.2037
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AkkaSim", "AkkaSim\AkkaSim.csproj", "{BFBBBB86-86F4-4D13-B443-E637CAEAB225}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimTest", "SimTest\SimTest.csproj", "{9BAAF088-6A16-4D46-9A4B-C484B8235891}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BFBBBB86-86F4-4D13-B443-E637CAEAB225}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFBBBB86-86F4-4D13-B443-E637CAEAB225}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFBBBB86-86F4-4D13-B443-E637CAEAB225}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFBBBB86-86F4-4D13-B443-E637CAEAB225}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BAAF088-6A16-4D46-9A4B-C484B8235891}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BAAF088-6A16-4D46-9A4B-C484B8235891}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BAAF088-6A16-4D46-9A4B-C484B8235891}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BAAF088-6A16-4D46-9A4B-C484B8235891}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E4D55C20-6EC8-4AD1-B298-85B6EBF10B30}
+	EndGlobalSection
+EndGlobal
