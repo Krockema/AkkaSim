@@ -10,5 +10,5 @@ Based on my Master thesis with a kinda slow solution for a .Net based DES System
 * Message Logging
 * Wrapping Akka correctly that any user does not have to bother about the Akka.Net world nor is able to falsy use the DES.
 * May implement diffrent a Distributed Clock like
-** https://en.wikipedia.org/wiki/Vector_clock or 
-** https://en.wikipedia.org/wiki/Lamport_timestamps
+* * https://en.wikipedia.org/wiki/Vector_clock or 
+* * https://en.wikipedia.org/wiki/Lamport_timestamps
