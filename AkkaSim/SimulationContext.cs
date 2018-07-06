@@ -1,11 +1,12 @@
 ﻿using Akka.Actor;
+using Akka.Event;
 using Akka.Util.Internal;
-using AkkaSim.Internals;
-using AkkaSim.Public;
+using AkkaSim.Interfaces;
+using AkkaSim.Definitions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static AkkaSim.Public.SimulationMessage;
+using static AkkaSim.Definitions.SimulationMessage;
 
 namespace AkkaSim
 {
@@ -15,7 +16,9 @@ namespace AkkaSim
 
         private long _CurrentInstructions = 0;
 
-        public HashSet<IActorRef> _allSimulants = new HashSet<IActorRef>();
+        //public HashSet<IActorRef> _allSimulants = new HashSet<IActorRef>();
+
+        private EventStream _EventStream;
 
         private bool _IsRunning = true;
 
@@ -25,8 +28,19 @@ namespace AkkaSim
 
         private long TimePeriod { get; set; }
 
-        public SimulationContext()
+        /// <summary>
+        /// Constructor for Simulation context
+        /// </summary>
+        /// <returns>IActorRef of the SimulationContext</returns>
+        public static Props Props(EventStream eventStream)
         {
+            return Akka.Actor.Props.Create(() => new SimulationContext(eventStream));
+        }
+
+        public SimulationContext(EventStream eventStream)
+        {
+            _EventStream = eventStream;
+
             Receive<Command>(s => s == Command.Start, s =>
             {
                 //Console.WriteLine("-- Starting Simulation -- !");
@@ -40,16 +54,16 @@ namespace AkkaSim
                         Advance();
                     });
 
-                    Receive<Command>(c => c == Command.Advance, c => Advance());
-
-                    Receive<Command>(c => c == Command.Registration, c => _allSimulants.Add(Sender));
-
-                    Receive<Command>(c => c == Command.DeRegistration, c => _allSimulants.Remove(Sender));
+                    Receive<Command>(c => c == Command.Stop, c =>
+                    {
+                        // Console.WriteLine("-- Resume simulation -- !");
+                        Context.UnbecomeStacked();
+                    });
 
                     Receive<Schedule>(m =>
                     {
                         var sheduleAt = m.Delay + TimePeriod;
-                        if (_FeaturedInstructions.Any(x => x.Key == sheduleAt))
+                        if (_FeaturedInstructions.TryGetValue(sheduleAt, out long value))
                             _FeaturedInstructions[sheduleAt] = _FeaturedInstructions[sheduleAt] + 1;
                         else
                             { _FeaturedInstructions.Add(sheduleAt, 1); }
@@ -69,28 +83,12 @@ namespace AkkaSim
                         _CurrentInstructions++;
                     });
 
-                    Receive<Command>(c => c == Command.Stop, c =>
-                    {
-                        // Console.WriteLine("-- Resume simulation -- !");
-                        Context.UnbecomeStacked();
-                    });
-
                     ReceiveAny(_ => Stash.Stash());
                 });
             });
 
             ReceiveAny(_ => Stash.Stash());
         }
-
-        /// <summary>
-        /// Constructor for Simulation context
-        /// </summary>
-        /// <returns>IActorRef of the SimulationContext</returns>
-        public static Props Props()
-        {
-            return Akka.Actor.Props.Create(() => new SimulationContext());
-        }
-
 
         private void Advance()
         {
@@ -125,20 +123,8 @@ namespace AkkaSim
                 _FeaturedInstructions.Remove(TimePeriod);
                 // global Tick
                 var tick = new AdvanceTo(TimePeriod);
-                _allSimulants.ForEach(x => x.Tell(tick));
+                _EventStream.Publish(tick);
             }
         }
-
-        /// <summary>
-        /// No Iedea if that will work out, even it is required.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public IActorRef CreateChildNode<T>() where T : ActorBase, ISimulationElement , new()
-        {
-            return Context.CreateActor(() => (T)Activator.CreateInstance(typeof(T), new object[] { Context, TimePeriod }));
-        }
-
-
     }
 }

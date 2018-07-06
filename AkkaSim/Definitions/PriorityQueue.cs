@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AkkaSim.Public
+namespace AkkaSim.Definitions
 { 
     // Priority Queue implementation from 
     // https://visualstudiomagazine.com/Articles/2012/11/01/Priority-Queues-with-C.aspx?Page=2

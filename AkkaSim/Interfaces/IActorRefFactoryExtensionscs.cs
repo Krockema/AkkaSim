@@ -1,10 +1,12 @@
 ﻿using Akka.Actor;
+using AkkaSim.Definitions;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text;
+using static AkkaSim.Definitions.SimulationMessage;
 
-namespace AkkaSim.Internals
+namespace AkkaSim.Interfaces
 {
     public static class IActorRefFactoryExtensionscs
     {
@@ -23,4 +25,6 @@ namespace AkkaSim.Internals
             return actor;
         }
     }
+
+
 }

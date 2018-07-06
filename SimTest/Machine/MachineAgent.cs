@@ -2,8 +2,11 @@
 using AkkaSim;
 using SimTest.Domain;
 using System;
-using static AkkaSim.Public.SimulationMessage;
+using static AkkaSim.Definitions.SimulationMessage;
 using SimTest.MachineQueue;
+using Akka.Event;
+using ImmutableObjectLib;
+using AkkaSim.Definitions;
 
 namespace SimTest.Machine
 {
@@ -12,14 +15,17 @@ namespace SimTest.Machine
         // Temp for test
         Random r = new Random(1337);
 
-        public MachineAgent(IActorRef simulationContext, long time) : base(simulationContext, time)
+        public MachineAgent(EventStream eventStream, IActorRef simulationContext, long time) : base(eventStream, simulationContext, time)
         {
             Console.WriteLine("Time: " + TimePeriod + " - " + Self.Path + " is Ready");
         }
-        public static Props Props(IActorRef simulationContext, long time)
+        public static Props Props(EventStream eventStream, IActorRef simulationContext, long time)
         {
-            return Akka.Actor.Props.Create(() => new MachineAgent(simulationContext, time));
+            return Akka.Actor.Props.Create(() => new MachineAgent(eventStream, simulationContext, time));
         }
+
+        
+
 
         protected override void Do(object o)
         {
@@ -34,17 +40,18 @@ namespace SimTest.Machine
         private void DoWork(Work m)
         {
             var material = m.Message as MaterialRequest;
-            var s = new Schedule(material.Material.AssemblyDuration + r.Next(-1, 2), new FinishWork(m.Message, Self));
-            _SimulationContext.Tell(s, null);
-            Console.WriteLine("Time: " + TimePeriod + " - " + Self.Path + " - Working on: " + material.Material.Name);
+            var dur = material.Material.AssemblyDuration + r.Next(-1, 2);
             
+            Schedule(dur, new FinishWork(m.Message, Self));
+            //_SimulationContext.Tell(s, null);
+            //Console.WriteLine("Time: " + TimePeriod + " - " + Self.Path + " - Working on: " + material.Material.Name);
         }
 
         private void WorkDone(FinishWork finishWork)
         {
             var material = finishWork.Message as MaterialRequest;
             _SimulationContext.Tell(new MachineJobDistributor.ProductionOrderFinished(material, Context.Parent), Self);
-            Console.WriteLine("Time: " + TimePeriod + " - " + Self.Path + " Finished: " + material.Material.Name);
+            //Console.WriteLine("Time: " + TimePeriod + " - " + Self.Path + " Finished: " + material.Material.Name);
         }
 
 

@@ -1,27 +1,29 @@
 ﻿using Akka.Actor;
 using AkkaSim;
 using SimTest.Domain;
-using AkkaSim.Public;
+using AkkaSim.Definitions;
 using System.Collections.Generic;
 using SimTest.Machine;
 using System.Linq;
 using System;
+using Akka.Event;
 
 namespace SimTest.MachineQueue
 {
     partial class MachineJobDistributor : SimulationElement
     {
+        private int MaterialCounter = 0;
         public Dictionary<IActorRef, bool> Machines { get; set; } = new Dictionary<IActorRef, bool>();
 
         public PriorityQueue<MaterialRequest> ReadyItems { get; set; } = new PriorityQueue<MaterialRequest>();
 
         public HashSet<MaterialRequest> WaitingItems { get; set; } = new HashSet<MaterialRequest>();
 
-        public static Props Props(IActorRef simulationContext, long time)
+        public static Props Props(EventStream eventStream, IActorRef simulationContext, long time)
         {
-            return Akka.Actor.Props.Create(() => new MachineJobDistributor(simulationContext, time));
+            return Akka.Actor.Props.Create(() => new MachineJobDistributor(eventStream, simulationContext, time));
         }
-        public MachineJobDistributor(IActorRef simulationContext, long time) : base(simulationContext, time)
+        public MachineJobDistributor(EventStream eventStream, IActorRef simulationContext, long time) : base(eventStream, simulationContext, time)
         {
 
         }
@@ -77,7 +79,7 @@ namespace SimTest.MachineQueue
             {
                 var key = Machines.First(X => X.Value == true).Key;
                 Machines.Remove(key);
-                var m = new MachineAgent.Work(ReadyItems.Dequeue(),key);
+                var m = new MachineAgent.Work(ReadyItems.Dequeue(), key);
                 Machines.Add(key, false);
                 _SimulationContext.Tell(m, Sender);
             };
@@ -85,15 +87,16 @@ namespace SimTest.MachineQueue
 
         private void CreateMachines(int machineNumber, long time)
         {
-            Machines.Add(Context.ActorOf(MachineAgent.Props(_SimulationContext, time), "Maschine_" + machineNumber), true);
+            Machines.Add(Context.ActorOf(MachineAgent.Props(base._EventStream, _SimulationContext, time), "Maschine_" + machineNumber), true);
         }
 
         private void ProvideMaterial(object o)
         {
             var po = o as ProductionOrderFinished;
             var request = po.Message as MaterialRequest;
-
-            Console.WriteLine("Time: " + TimePeriod + " Finished: " + request.Material.Name);
+            if (request.Material.Name == "Table")
+                MaterialCounter++;
+            //Console.WriteLine("Time: " + TimePeriod + " Number " + MaterialCounter + " Finished: " + request.Material.Name);
             if (!request.IsHead)
             {
                 var parrent = WaitingItems.Single(x => x.Id == request.Parrent);

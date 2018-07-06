@@ -1,6 +1,6 @@
 ﻿using Akka.Actor;
-using AkkaSim.Internals;
-using AkkaSim.Public;
+using AkkaSim.Interfaces;
+using AkkaSim.Definitions;
 using System;
 using System.Collections.Generic;
 using System.Text;

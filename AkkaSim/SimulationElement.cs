@@ -1,19 +1,21 @@
 ﻿using Akka.Actor;
-using AkkaSim.Internals;
-using AkkaSim.Public;
+using AkkaSim.Interfaces;
+using AkkaSim.Definitions;
 using System;
 using System.Collections.Generic;
-using static AkkaSim.Public.SimulationMessage;
+using Akka.Event;
+using static AkkaSim.Definitions.SimulationMessage;
 
 namespace AkkaSim
 {
-    public abstract class SimulationElement : ReceiveActor, ISimulationElement
+    public abstract class SimulationElement : ReceiveActor, ISimulationElement, ILogReceive
     {
         /// <summary>
         /// Referencing the Global Simulation Context. (Head Actor)
         /// </summary>
         protected IActorRef _SimulationContext { get; }
-        
+        protected EventStream _EventStream { get; }
+
         /// <summary>
         /// Guid of the current element
         /// </summary>
@@ -34,14 +36,20 @@ namespace AkkaSim
         /// </summary>
         protected sealed override void PreStart()
         {
-            _SimulationContext.Tell(Command.Registration, Self);
+            _EventStream.Subscribe(Self, typeof(AdvanceTo));
+            //_SimulationContext.Tell(Command.Registration, Self);
             base.PreStart();
         }
 
-        public SimulationElement(IActorRef simulationContext, long time)
+        public SimulationElement(EventStream eventStream, IActorRef simulationContext, long time)
         {
+            #region Init
+
             TimePeriod = time;
             _SimulationContext = simulationContext;
+            _EventStream = eventStream;
+
+            #endregion Init
 
             Receive<Command>(f => f == Command.Finish, f => {
                 Finish();
@@ -61,8 +69,8 @@ namespace AkkaSim
         /// </summary>
         protected sealed override void PostStop()
         {
-            _SimulationContext.Tell(Command.DeRegistration, Self);
-
+            //_SimulationContext.Tell(Command.DeRegistration, Self);
+            _EventStream.Unsubscribe(Self, typeof(AdvanceTo));
             // tell parrents
             var p = Context.Parent;
             if (!(p == _SimulationContext))
@@ -90,6 +98,7 @@ namespace AkkaSim
 
         private void MapMessageToMethod(object message)
         {
+            LogInterceptor(message);
             Do(message);
             _SimulationContext.Tell(Command.Done, null);
         }
@@ -103,6 +112,20 @@ namespace AkkaSim
                 _messageStash.Add(atTime, stash);
             }
             stash.Enqueue(message);
+        }
+
+        public void Schedule(long delay, ISimulationMessage message)
+        {
+            var s = new Schedule(delay, message);
+            _SimulationContext.Tell(s, null);
+        }
+
+        private void LogInterceptor(object message)
+        {
+            if((message as ISimulationMessage) != null)
+                _EventStream.Publish(message as ISimulationMessage);
+            else
+                _EventStream.Publish(message is Command);
         }
 
         private void ReleaseMessagesForThisTimeperiod()
@@ -132,6 +155,17 @@ namespace AkkaSim
         protected virtual void Finish()
         {
             Terminate();
+        }
+
+
+        /// <summary>
+        /// No Iedea if that will work out, even it is required.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public IActorRef CreateNode<T>() where T : ActorBase, ISimulationElement, new()
+        {
+            return Context.CreateActor(() => (T)Activator.CreateInstance(typeof(T), new object[] { _EventStream, Context, TimePeriod }));
         }
     }
 }

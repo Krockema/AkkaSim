@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Akka.Actor;
-using AkkaSim.Public;
+using AkkaSim.Definitions;
 using SimTest.Domain;
 
 namespace SimTest.Machine
