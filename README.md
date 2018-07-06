@@ -8,8 +8,8 @@ Based on my Master thesis with a kinda slow solution for a .Net based DES System
 # ToDo's
 - [x] Basis DES with Example
 - [ ] Unit Tests
-- [ ] Simulation interrupt
-- [ ] Message Logging
+- [x] Simulation interrupt
+- [x] Message Logging
 - [ ] Wrapping Akka correctly that any user does not have to bother about the Akka.Net world nor is able to falsy use the DES.
 - [ ] May implement diffrent a Distributed Clock like
   * https://en.wikipedia.org/wiki/Vector_clock or 
