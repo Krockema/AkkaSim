@@ -1,4 +1,4 @@
-﻿namespace AkkaSim.Interfaces
+﻿namespace AkkaSim.Definitions
 {
     public enum Priority
     {

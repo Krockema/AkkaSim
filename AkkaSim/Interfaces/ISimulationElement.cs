@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AkkaSim.Definitions
+namespace AkkaSim.Interfaces
 {
     public interface ISimulationElement
     {

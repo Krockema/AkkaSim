@@ -1,8 +1,7 @@
 ﻿using Akka.Actor;
-using AkkaSim.Interfaces;
-using System;
+using AkkaSim.Definitions;
 
-namespace AkkaSim.Definitions
+namespace AkkaSim.Interfaces
 {
     public interface ISimulationMessage
     {
