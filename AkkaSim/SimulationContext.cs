@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using static AkkaSim.Definitions.SimulationMessage;
+using System.Threading.Tasks;
+using Akka;
 
 namespace AkkaSim
 {
@@ -17,8 +19,6 @@ namespace AkkaSim
         private long _CurrentInstructions = 0;
 
         //public HashSet<IActorRef> _allSimulants = new HashSet<IActorRef>();
-
-        private EventStream _EventStream;
 
         private bool _IsRunning = true;
 
@@ -34,13 +34,11 @@ namespace AkkaSim
         /// <returns>IActorRef of the SimulationContext</returns>
         public static Props Props(EventStream eventStream)
         {
-            return Akka.Actor.Props.Create(() => new SimulationContext(eventStream));
+            return Akka.Actor.Props.Create(() => new SimulationContext());
         }
 
-        public SimulationContext(EventStream eventStream)
+        public SimulationContext()
         {
-            _EventStream = eventStream;
-
             Receive<Command>(s => s == Command.Start, s =>
             {
                 //Console.WriteLine("-- Starting Simulation -- !");
@@ -50,6 +48,7 @@ namespace AkkaSim
                 {
                     Receive<Command>(c => c == Command.Done, c =>
                     {
+                        //System.Diagnostics.Debug.WriteLine("-- Done");
                         _CurrentInstructions--;
                         Advance();
                     });
@@ -57,7 +56,17 @@ namespace AkkaSim
                     Receive<Command>(c => c == Command.Stop, c =>
                     {
                         // Console.WriteLine("-- Resume simulation -- !");
+                        //System.Diagnostics.Debug.WriteLine("STOP");
                         Context.UnbecomeStacked();
+                    });
+
+                    Receive<Shutdown>(c => 
+                    {
+                        if (_CurrentInstructions == 0 && _FeaturedInstructions.Count() == 0)
+                        {
+                            //System.Diagnostics.Debug.WriteLine("Simulation Finished...");
+                            CoordinatedShutdown.Get(Context.System).Run();
+                        }
                     });
 
                     Receive<Schedule>(m =>
@@ -80,6 +89,7 @@ namespace AkkaSim
                         else
                             Sender.Tell(m);
 
+                        //System.Diagnostics.Debug.WriteLine("++" + m.GetType().ToString());
                         _CurrentInstructions++;
                     });
 
@@ -90,6 +100,7 @@ namespace AkkaSim
             ReceiveAny(_ => Stash.Stash());
         }
 
+
         private void Advance()
         {
             if (_IsRunning && !_IsComplete && _CurrentInstructions == 0)
@@ -99,8 +110,7 @@ namespace AkkaSim
                     Advance(_FeaturedInstructions.Min(x => x.Key));
                 } else {
                     _IsComplete = true;
-                    Console.WriteLine("Simulation Finished...");
-                    Context.Stop(Self);
+                    Context.System.Scheduler.ScheduleTellOnce(TimeSpan.FromSeconds(1), Self, new Shutdown(Self), ActorRefs.NoSender);
                 }
             }
         }
@@ -123,7 +133,8 @@ namespace AkkaSim
                 _FeaturedInstructions.Remove(TimePeriod);
                 // global Tick
                 var tick = new AdvanceTo(TimePeriod);
-                _EventStream.Publish(tick);
+                Context.System.EventStream.Publish(tick);
+                //System.Diagnostics.Debug.WriteLine("Move To: " + TimePeriod + " open " + _CurrentInstructions);
             }
         }
     }

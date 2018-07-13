@@ -21,11 +21,11 @@ namespace SimTest.MachineQueue
 
         public static Props Props(EventStream eventStream, IActorRef simulationContext, long time)
         {
-            return Akka.Actor.Props.Create(() => new MachineJobDistributor(eventStream, simulationContext, time));
+            return Akka.Actor.Props.Create(() => new MachineJobDistributor(simulationContext, time));
         }
-        public MachineJobDistributor(EventStream eventStream, IActorRef simulationContext, long time) : base(eventStream, simulationContext, time)
+        public MachineJobDistributor(IActorRef simulationContext, long time) 
+            : base(simulationContext, time)
         {
-
         }
 
         protected override void Do(object o)
@@ -87,7 +87,7 @@ namespace SimTest.MachineQueue
 
         private void CreateMachines(int machineNumber, long time)
         {
-            Machines.Add(Context.ActorOf(MachineAgent.Props(base._EventStream, _SimulationContext, time), "Maschine_" + machineNumber), true);
+            Machines.Add(Context.ActorOf(MachineAgent.Props(_SimulationContext, time), "Maschine_" + machineNumber), true);
         }
 
         private void ProvideMaterial(object o)
@@ -115,5 +115,9 @@ namespace SimTest.MachineQueue
             PushWork();
         }
 
+        protected override void Finish()
+        {
+            Console.WriteLine(Sender.Path + " has been Killed");
+        }
     }
 }

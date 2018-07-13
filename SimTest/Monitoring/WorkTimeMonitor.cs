@@ -9,22 +9,22 @@ namespace SimTest.Monitoring
 {
     public class WorkTimeMonitor : SimulationMonitor
     {
-        public WorkTimeMonitor(EventStream eventStream, long time) 
-            : base(eventStream, time, typeof(MachineAgent.FinishWork))
+        public WorkTimeMonitor(long time) 
+            : base(time, typeof(MachineAgent.FinishWork))
         {
         }
 
         protected override void EventHandle(object o)
         {
-            base.EventHandle(o);
+            // base.EventHandle(o);
             var m = o as MachineAgent.FinishWork;
             var material = m.Message as MaterialRequest;
             Console.WriteLine("Finished: " + material.Material.Name + " on Time: " + _Time);
         }
 
-        public static Props Props(EventStream eventStream, long time)
+        public static Props Props(long time)
         {
-            return Akka.Actor.Props.Create(() => new WorkTimeMonitor(eventStream, time));
+            return Akka.Actor.Props.Create(() => new WorkTimeMonitor(time));
         }
     }
 }

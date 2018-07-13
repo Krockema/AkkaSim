@@ -43,5 +43,24 @@ type public Message =
     // Returns new Object with Updated Due
     member this.UpdateDue d = { this with Due = d }
     
-        
 
+
+/// Second option do define a Class with Prototype Gernerator for all elements 
+/// If you require an entirely new copy of an Object with a new Guid.
+
+type public IWorkItem = 
+    abstract member Key : Guid with get
+    abstract member WorkItem : string // with get // Note: seems to be not neccecary
+type public WorkItem(workItem) = 
+    new (prototype: WorkItem, ?workItem) =
+        WorkItem(defaultArg workItem prototype.WorkItem ) 
+    member val Key = Guid.NewGuid()
+    member val WorkItem = workItem
+    // Third Way to Clone an object with new Propertyies, sadly doesnt work with c#
+    // member this.Clone() = (this :> System.ICloneable).Clone() :?> WorkItem
+    interface IWorkItem with 
+        member this.Key with get() = this.Key
+        member this.WorkItem with get() = this.WorkItem
+    // Third Way requierd Extension.
+    //// interface ICloneable with 
+    ////     member this.Clone() = box (new WorkItem(workItem = this.WorkItem))

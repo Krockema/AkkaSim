@@ -22,15 +22,16 @@ namespace AkkaSim
                          /* else */ : ConfigurationFactory.Load();
 
             ActorSystem  = ActorSystem.Create("SimulationSystem", config);
-            SimulationContext = ActorSystem.ActorOf(Props.Create(() => new SimulationContext(ActorSystem.EventStream)),  "SimulationContext");
+            SimulationContext = ActorSystem.ActorOf(Props.Create(() => new SimulationContext()),  "SimulationContext");
+
+            
+
         }
 
-        public void Run()
+        public Task RunAsync()
         {
-            //return Task.Run(() =>
-            //{
-                SimulationContext.Tell(Command.Start);
-            //});
+            SimulationContext.Tell(Command.Start);
+            return ActorSystem.WhenTerminated;
         }
 
         /// <summary>

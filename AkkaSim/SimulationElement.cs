@@ -14,7 +14,6 @@ namespace AkkaSim
         /// Referencing the Global Simulation Context. (Head Actor)
         /// </summary>
         protected IActorRef _SimulationContext { get; }
-        protected EventStream _EventStream { get; }
 
         /// <summary>
         /// Guid of the current element
@@ -36,22 +35,21 @@ namespace AkkaSim
         /// </summary>
         protected sealed override void PreStart()
         {
-            _EventStream.Subscribe(Self, typeof(AdvanceTo));
+            Context.System.EventStream.Subscribe(Self, typeof(AdvanceTo));
             //_SimulationContext.Tell(Command.Registration, Self);
             base.PreStart();
         }
 
-        public SimulationElement(EventStream eventStream, IActorRef simulationContext, long time)
+        public SimulationElement(IActorRef simulationContext, long time)
         {
             #region Init
 
             TimePeriod = time;
             _SimulationContext = simulationContext;
-            _EventStream = eventStream;
 
             #endregion Init
 
-            Receive<Command>(f => f == Command.Finish, f => {
+            Receive<Finish>(f => {
                 Finish();
                 _SimulationContext.Tell(Command.Done, null);
             });
@@ -70,18 +68,20 @@ namespace AkkaSim
         protected sealed override void PostStop()
         {
             //_SimulationContext.Tell(Command.DeRegistration, Self);
-            _EventStream.Unsubscribe(Self, typeof(AdvanceTo));
+            Context.System.EventStream.Unsubscribe(Self, typeof(AdvanceTo));
             // tell parrents
             var p = Context.Parent;
             if (!(p == _SimulationContext))
                 _SimulationContext.Tell(new Finish(p), Self);
-
+            
             base.PostStop();
         }
-
-        private void Terminate() {
-            
-            // check if all childs Finished
+        /// <summary>
+        /// check if all childs Finished
+        /// if there is any path which is not equal to the child path not all childs have been terminated.
+        /// </summary>
+        private void Terminate()
+        {
             var childs = Context.GetChildren();
             foreach (var child in childs)
                 if (child.Path != Sender.Path) return;
@@ -123,9 +123,9 @@ namespace AkkaSim
         private void LogInterceptor(object message)
         {
             if((message as ISimulationMessage) != null)
-                _EventStream.Publish(message as ISimulationMessage);
+                Context.System.EventStream.Publish(message as ISimulationMessage);
             else
-                _EventStream.Publish(message is Command);
+                Context.System.EventStream.Publish(message is Command);
         }
 
         private void ReleaseMessagesForThisTimeperiod()
@@ -145,7 +145,7 @@ namespace AkkaSim
         /// <param name="process"></param>
         protected virtual void Do(object process)
         {
-
+            
         }
 
         /// <summary>
@@ -165,7 +165,7 @@ namespace AkkaSim
         /// <returns></returns>
         public IActorRef CreateNode<T>() where T : ActorBase, ISimulationElement, new()
         {
-            return Context.CreateActor(() => (T)Activator.CreateInstance(typeof(T), new object[] { _EventStream, Context, TimePeriod }));
+            return Context.CreateActor(() => (T)Activator.CreateInstance(typeof(T), new object[] { Context, TimePeriod }));
         }
     }
 }

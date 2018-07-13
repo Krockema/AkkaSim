@@ -63,6 +63,11 @@ namespace AkkaSim.Definitions
 
         };
 
+        internal class Shutdown : SimulationMessage
+        {
+            public Shutdown(IActorRef target) : base(null, target, Priority.Low) { }
+        }
+
         /// <summary>
         /// Message to Advance the local clock time of each registred SimulationElement.
         /// </summary>
