@@ -6,12 +6,12 @@ using System;
 namespace AkkaSim.Definitions
 {
     /// <summary>
-    /// Data Stuckture 
+    /// data stucture 
     /// </summary>
     public class SimulationMessage: IComparable<ISimulationMessage>, ISimulationElement, ISimulationMessage
     {
         /// <summary>
-        /// Generic Message identifier
+        /// Generic message identifier
         /// </summary>
         public Guid Key { get; }
         /// <summary>
@@ -19,11 +19,11 @@ namespace AkkaSim.Definitions
         /// </summary>
         public object Message { get; }
         /// <summary>
-        /// Target Actor to whom the Simulation Messageshall be forwarded.
+        /// Target actor to whom the simulation message shall be forwarded.
         /// </summary>
         public IActorRef Target { get; }
         /// <summary>
-        /// Priority to Order msg
+        /// Priority to order the message
         /// </summary>
         public Priority Priority { get; }
         /// <summary>
@@ -38,11 +38,11 @@ namespace AkkaSim.Definitions
         }
 
         /// <summary>
-        /// Field to fill if Broadcast is Required.
+        /// Field to fill if broadcast is required.
         /// </summary>
         public ActorSelection TargetSelection { get; }
         /// <summary>
-        /// Comparer for Priority Queue
+        /// Comparer for priority queue
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -54,7 +54,7 @@ namespace AkkaSim.Definitions
         }
 
         /// <summary>
-        /// Agent Intern  finish current Actor and tell parrents
+        /// Agent intern finish current actor and tell parrents
         /// </summary>
         internal class Finish : SimulationMessage
         {
@@ -69,7 +69,7 @@ namespace AkkaSim.Definitions
         }
 
         /// <summary>
-        /// Message to Advance the local clock time of each registred SimulationElement.
+        /// Message to advance the local clock time of each registred simulation element.
         /// </summary>
         internal class AdvanceTo
         {
@@ -81,12 +81,12 @@ namespace AkkaSim.Definitions
         }
 
         /// <summary>
-        /// A Wrapper for messages to pop after given delay
+        /// A wrapper for messages to pop after given delay
         /// </summary>
         public class Schedule
         {
             /// <summary>
-            /// Amount of Timesteps the message should be delayed
+            /// Amount of timesteps the message should be delayed
             /// </summary>
             public long Delay { get; }
             public ISimulationMessage Message { get; }
@@ -98,7 +98,7 @@ namespace AkkaSim.Definitions
         }
 
         /// <summary>
-        /// General message envelope for all Messages in the System
+        /// General message envelope for all messages in the system
         /// </summary>
         /// <param name="message"></param>
         /// <param name="target"></param>
@@ -113,7 +113,7 @@ namespace AkkaSim.Definitions
         }
 
         /// <summary>
-        /// Broadcast message by ActorSelection
+        /// Broadcast message by actor selection
         /// </summary>
         /// <param name="message"></param>
         /// <param name="targetSelection"></param>
