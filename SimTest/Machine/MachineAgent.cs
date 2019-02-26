@@ -4,6 +4,7 @@ using SimTest.Domain;
 using System;
 using SimTest.MachineQueue;
 using Akka.Event;
+using SimTest.SimulationHelper;
 
 namespace SimTest.Machine
 {
@@ -23,7 +24,6 @@ namespace SimTest.Machine
 
         protected override void Do(object o)
         {
-            //switch (((ISimulationMessage)o).Message)
             switch (o)
             {
                 case Work m: DoWork(m); break;

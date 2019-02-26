@@ -8,7 +8,7 @@ namespace AkkaSim
 {
     public class Simulation
     {
-
+        public const string SimulationContextName = "SimulationContext";
         public ActorSystem ActorSystem { get; }
         public IActorRef SimulationContext { get; }
 
@@ -16,17 +16,30 @@ namespace AkkaSim
         /// Prepare Simulation Environment
         /// </summary>
         /// <param name="debug">Enables AKKA-Global message Debugging</param>
-        public Simulation(bool debug)
+        public Simulation(SimulationConfig simConfig)
         {
-            Config config = (debug) ? ConfigurationFactory.ParseString(GetConfiguration()) 
+            Config config = (simConfig.Debug) ? ConfigurationFactory.ParseString(GetConfiguration()) 
                          /* else */ : ConfigurationFactory.Load();
 
-            ActorSystem  = ActorSystem.Create("SimulationSystem", config);
-            SimulationContext = ActorSystem.ActorOf(Props.Create(() => new SimulationContext()),  "SimulationContext");
-
-            
-
+            ActorSystem  = ActorSystem.Create(SimulationContextName, config);
+            simConfig.Inbox = Inbox.Create(ActorSystem);
+            SimulationContext = ActorSystem.ActorOf(Props.Create(() => new SimulationContext(simConfig)), SimulationContextName);
         }
+
+        public bool IsReady()
+        {
+            var r = SimulationContext.Ask(Command.IsReady).Result;
+            if (r is Command.IsReady)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public void Continue() {
+            SimulationContext.Tell(Command.Start);
+        }
+
 
         public Task RunAsync()
         {

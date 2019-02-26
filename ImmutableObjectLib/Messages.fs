@@ -5,6 +5,9 @@ open System
 /////      EXAMPLE IMPLEMENTATION Of an imutable Message          ///////
 /////      with update function and interface inheritance         ///////
 /////////////////////////////////////////////////////////////////////////
+type public Priority = VeryLow=100 | Low=200 | Medium=300 | High=400 | VeryHigh=500
+
+
 // General Simulation Element Interface
 type public ISumulationElement = 
     abstract member Key : Guid with get
@@ -12,10 +15,8 @@ type public ISumulationElement =
 // Raw Message Definition
 type public IRawMessage = 
     abstract Target : string with get
-    abstract Source: string with get
     abstract Object: obj with get
-    abstract Due: int64 with get
-    abstract Priority: int with get
+    abstract Priority: Priority with get
     abstract CompareTo : IRawMessage -> int
    // abstract member Col: ReadOnlyCollection<obj>
 
@@ -24,26 +25,42 @@ type ISumulationMessage =
     inherit ISumulationElement 
     inherit IRawMessage
 
+type public TestItem =
+    {
+        Key : Guid
+        Text : String
+    }
+    with member this.Update t = { this with Text = t }
+
 type public Message =
     { Key : Guid
       Target : string
-      Source: string
       Object: obj
-      Due: int64 
-      Priority: int} 
+      List: System.Collections.Generic.List<TestItem>
+      Priority: Priority } 
     interface ISumulationMessage with 
-        member this.Key with get() = this.Key
+        member this.Key  with get() = this.Key
         member this.Target with get() = this.Target
-        member this.Source with get() = this.Source
         member this.Object with get() = this.Object
-        member this.Due with get() = this.Due
         member this.Priority with get() = this.Priority
         member this.CompareTo(other) = if this.Priority < other.Priority then -1 else 
                                         if this.Priority > other.Priority then 1 else 0
     // Returns new Object with Updated Due
-    member this.UpdateDue d = { this with Due = d }
+    member this.UpdatePriority p = { this with Priority = p }
     
 
+type public MessageType2 =
+    { Key : Guid
+      Target : string
+      Object: obj
+      List: System.Collections.Generic.List<TestItem>
+      Priority: Priority 
+      } 
+    interface ISumulationElement with 
+        member this.Key  with get() = this.Key
+    // Returns new Object with Updated Due
+    member this.UpdatePriority p = { this with Priority = p }
+    
 
 /// Second option do define a Class with Prototype Gernerator for all elements 
 /// If you require an entirely new copy of an Object with a new Guid.
@@ -64,3 +81,5 @@ type public WorkItem(workItem) =
     // Third Way requierd Extension.
     //// interface ICloneable with 
     ////     member this.Clone() = box (new WorkItem(workItem = this.WorkItem))
+
+

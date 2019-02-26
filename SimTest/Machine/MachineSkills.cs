@@ -20,6 +20,7 @@ namespace SimTest.Machine
             { }
         }
     
+        
         public class FinishWork : SimulationMessage
         {
             public FinishWork(object Message, IActorRef target) : base(Message, target)

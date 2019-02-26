@@ -3,7 +3,6 @@ using AkkaSim.Interfaces;
 using AkkaSim.Definitions;
 using System;
 using System.Collections.Generic;
-using Akka.Event;
 using static AkkaSim.Definitions.SimulationMessage;
 
 namespace AkkaSim
@@ -42,6 +41,7 @@ namespace AkkaSim
 
         public SimulationElement(IActorRef simulationContext, long time)
         {
+            Key = Guid.NewGuid();
             #region Init
 
             TimePeriod = time;
@@ -51,7 +51,7 @@ namespace AkkaSim
 
             Receive<Finish>(f => {
                 Finish();
-                _SimulationContext.Tell(Command.Done, null);
+                _SimulationContext.Tell(new Done(f), ActorRefs.NoSender);
             });
 
             Receive<Schedule>(message => ScheduleMessages(message.Delay, (SimulationMessage)message.Message));
@@ -79,6 +79,7 @@ namespace AkkaSim
         /// <summary>
         /// check if all childs Finished
         /// if there is any path which is not equal to the child path not all childs have been terminated.
+        /// Question to Check: ?? Should be GetChildren = null ?? to ensure there are no childs anymore... ?? // MK
         /// </summary>
         private void Terminate()
         {
@@ -98,9 +99,9 @@ namespace AkkaSim
 
         private void MapMessageToMethod(object message)
         {
-            LogInterceptor(message);
+            ISimulationMessage m = message as ISimulationMessage;
             Do(message);
-            _SimulationContext.Tell(Command.Done, null);
+            _SimulationContext.Tell(new Done(m), ActorRefs.NoSender);
         }
 
         private void ScheduleMessages(long delay, SimulationMessage message)
@@ -117,15 +118,7 @@ namespace AkkaSim
         public void Schedule(long delay, ISimulationMessage message)
         {
             var s = new Schedule(delay, message);
-            _SimulationContext.Tell(s, null);
-        }
-
-        private void LogInterceptor(object message)
-        {
-            if((message as ISimulationMessage) != null)
-                Context.System.EventStream.Publish(message as ISimulationMessage);
-            else
-                Context.System.EventStream.Publish(message is Command);
+            _SimulationContext.Tell(s, ActorRefs.NoSender);
         }
 
         private void ReleaseMessagesForThisTimeperiod()

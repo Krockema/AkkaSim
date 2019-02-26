@@ -95,7 +95,7 @@ namespace SimTest.MachineQueue
             var po = o as ProductionOrderFinished;
             var request = po.Message as MaterialRequest;
             if (request.Material.Name == "Table")
-                MaterialCounter++;
+                Console.WriteLine("Table No: "+ ++MaterialCounter);
             //Console.WriteLine("Time: " + TimePeriod + " Number " + MaterialCounter + " Finished: " + request.Material.Name);
             if (!request.IsHead)
             {
@@ -112,6 +112,7 @@ namespace SimTest.MachineQueue
             Machines.Remove(Sender);
             Machines.Add(Sender, true);
 
+            
             PushWork();
         }
 

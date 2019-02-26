@@ -1,6 +1,6 @@
 ﻿using Akka.Actor;
-using Akka.Event;
 using System;
+using System.Collections.Generic;
 using static AkkaSim.Definitions.SimulationMessage;
 
 namespace AkkaSim
@@ -8,29 +8,30 @@ namespace AkkaSim
     public class SimulationMonitor : UntypedActor, ILogReceive
     {
         protected long _Time;
-        private Type _Channel;
-        public SimulationMonitor(long time, Type channel)
+        private List<Type> _Channels;
+        public SimulationMonitor(long time, List<Type> channels)
         {
             _Time = time;
-            _Channel = channel;
+            _Channels = channels;
                        
         }
 
         protected override void PreStart()
         {
-            Context.System.EventStream.Subscribe(Self, _Channel);
+            _Channels.ForEach(channel => Context.System.EventStream.Subscribe(Self, channel));
             Context.System.EventStream.Subscribe(Self, typeof(AdvanceTo));
+
             base.PreStart();
         }
 
-        public static Props Props(long time, Type channel)
+        public static Props Props(long time, List<Type> channels)
         {
-            return Akka.Actor.Props.Create(() => new SimulationMonitor(time, channel));
+            return Akka.Actor.Props.Create(() => new SimulationMonitor(time, channels));
         }
 
         protected override void PostStop()
         {
-            Context.System.EventStream.Unsubscribe(Self, _Channel);
+            _Channels.ForEach(channel => Context.System.EventStream.Unsubscribe(Self, channel));
             Context.System.EventStream.Unsubscribe(Self, typeof(AdvanceTo));
             base.PostStop();
         }

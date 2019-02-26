@@ -8,7 +8,7 @@ namespace AkkaSim.Definitions
     /// <summary>
     /// Data Stuckture 
     /// </summary>
-    public class SimulationMessage: IComparable<ISimulationMessage>, ISimulationElement, ISimulationMessage
+    public class SimulationMessage : IComparable<ISimulationMessage>, ISimulationElement, ISimulationMessage
     {
         /// <summary>
         /// Generic Message identifier
@@ -27,14 +27,32 @@ namespace AkkaSim.Definitions
         /// </summary>
         public Priority Priority { get; }
         /// <summary>
+        /// Log this Message to the event Stream.
+        /// </summary>
+        public bool LogThis { get; }        
+        /// <summary>
         /// For simple and fast internal instructions
         /// </summary>
-        internal enum Command
+        public enum Command
         {
             Start,
             Stop,
             Done,
-            Finish
+            Finish,
+            IsReady
+        }
+
+        public enum SimulationState
+        {
+            Stopped,
+            Started,
+            Finished
+        }
+
+        public class Done : SimulationMessage
+        {
+            public Done(ISimulationMessage with)
+                : base(target: with.Target, message: with) { }
         }
 
         /// <summary>
@@ -65,7 +83,7 @@ namespace AkkaSim.Definitions
 
         internal class Shutdown : SimulationMessage
         {
-            public Shutdown(IActorRef target) : base(null, target, Priority.Low) { }
+            public Shutdown(IActorRef target) : base(null, target, false, Priority.Low) { }
         }
 
         /// <summary>
@@ -79,6 +97,19 @@ namespace AkkaSim.Definitions
                 TimePeriod = time;
             }
         }
+
+        /// <summary>
+        /// Message to Advance the local clock time of each registred SimulationElement.
+        /// </summary>
+        internal class SetInterruptionInterval
+        {
+            public long Interval { get; }
+            public SetInterruptionInterval(long time)
+            {
+                Interval = time;
+            }
+        }
+
 
         /// <summary>
         /// A Wrapper for messages to pop after given delay
@@ -102,14 +133,15 @@ namespace AkkaSim.Definitions
         /// </summary>
         /// <param name="message"></param>
         /// <param name="target"></param>
-        /// <param name="priority"></param>
-        protected SimulationMessage(object message, IActorRef target, Priority priority = Priority.Medium)
+        /// <param name="logThis">default: False</param>
+        /// <param name="priority">default: Medium</param>
+        protected SimulationMessage(object message, IActorRef target, bool logThis = false, Priority priority = Priority.Medium)
         {
             Key = Guid.NewGuid();
             Message = message;
             Target = target;
             Priority = priority;
-
+            LogThis = logThis;
         }
 
         /// <summary>
@@ -118,12 +150,13 @@ namespace AkkaSim.Definitions
         /// <param name="message"></param>
         /// <param name="targetSelection"></param>
         /// <param name="priority"></param>
-        protected SimulationMessage(object message, ActorSelection targetSelection, Priority priority = Priority.Medium)
+        protected SimulationMessage(object message, ActorSelection targetSelection,bool logThis = false, Priority priority = Priority.Medium)
         {
             Key = Guid.NewGuid();
             Message = message;
             TargetSelection = targetSelection;
             Priority = priority;
+            LogThis = logThis;
         }
     }
 
