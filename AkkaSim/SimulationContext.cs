@@ -70,6 +70,7 @@ namespace AkkaSim
                     _IsRunning = true;
                     _nextInterupt = _nextInterupt + _SimulationConfig.InteruptInterval;
                     _SimulationConfig.Inbox.Receiver.Tell(SimulationState.Started);
+                    
                     Advance_Debug();
                 }
                 else
@@ -86,6 +87,21 @@ namespace AkkaSim
                 //if (_CurrentInstructions == 0)
                 {
                     Sender.Tell(Command.IsReady, ActorRefs.NoSender);
+                }
+                else
+                {
+                    // Not Ready Yet, Try Again
+                    Context.Self.Forward(s);
+                }
+            });
+
+            // Determine when The Simulation is Done.
+            Receive<SimulationState>(s => s == SimulationState.Finished, s =>
+            {
+                if (_InstructionStore.Count() == 0)
+                {
+                    _SimulationConfig.Inbox.Receiver.Tell(SimulationState.Finished);
+                    _IsComplete = true;
                 }
                 else
                 {
@@ -183,7 +199,7 @@ namespace AkkaSim
 
             });
 
-            // Determine when The initialisation is Done.
+            // Determine when The Simulation is Done.
             Receive<Command>(s => s == Command.IsReady, s =>
             {
                 //if (_InstructionStore.Count() == 0)
@@ -198,6 +214,21 @@ namespace AkkaSim
                 }
             });
 
+            // Determine when The Simulation is Done.
+            Receive<SimulationState>(s => s == SimulationState.Finished, s =>
+            {
+                //if (_InstructionStore.Count() == 0)
+                if (_CurrentInstructions == 0)
+                {
+                    _SimulationConfig.Inbox.Receiver.Tell(SimulationState.Finished);
+                    _IsComplete = true;
+                }
+                else
+                {
+                    // Not Ready Yet, Try Again
+                    Context.Self.Forward(s);
+                }
+            });
 
             Receive<Done>(c =>
             {
