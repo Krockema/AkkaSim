@@ -1,8 +1,8 @@
-﻿using Akka.Actor;
-using System;
-using static AkkaSim.Definitions.SimulationMessage;
+﻿using System;
+using Akka.Actor;
+using AkkaSim.Definitions;
 
-namespace Master40.SimulationCore.Reporting
+namespace AkkaSim
 {
     /// <summary>
     /// A Time Monitor that does perform an injected Action on TimeAdvance event.
@@ -16,21 +16,21 @@ namespace Master40.SimulationCore.Reporting
             TimeReporter = report;
             #endregion
             
-            Receive<AdvanceTo>(dl => 
+            Receive<SimulationMessage.AdvanceTo>(dl => 
                 report(dl.TimePeriod)
             );
         }
 
         protected sealed override void PreStart()
         {
-            Context.System.EventStream.Subscribe(Self, typeof(AdvanceTo));
+            Context.System.EventStream.Subscribe(Self, typeof(SimulationMessage.AdvanceTo));
             base.PreStart();
         }
 
         protected sealed override void PostStop()
         {
             //_SimulationContext.Tell(Command.DeRegistration, Self);
-            Context.System.EventStream.Unsubscribe(Self, typeof(AdvanceTo));
+            Context.System.EventStream.Unsubscribe(Self, typeof(SimulationMessage.AdvanceTo));
             base.PostStop();
         }
     }

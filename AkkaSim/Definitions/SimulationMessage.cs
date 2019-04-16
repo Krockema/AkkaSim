@@ -97,7 +97,6 @@ namespace AkkaSim.Definitions
                 TimePeriod = time;
             }
         }
-
         /// <summary>
         /// Message to Advance the local clock time of each registred SimulationElement.
         /// </summary>

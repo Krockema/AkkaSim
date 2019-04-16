@@ -1,5 +1,4 @@
 ﻿using Akka.Actor;
-using Akka.Util.Internal;
 using AkkaSim.Definitions;
 using AkkaSim.Interfaces;
 using System;
@@ -13,7 +12,7 @@ namespace AkkaSim
     {
         // for Normal Mode
         private Dictionary<long, long> _FeaturedInstructions = new Dictionary<long, long>();
-        public long _CurrentInstructions = 0;
+        private long _CurrentInstructions = 0;
 
         // for Debugging Mode
         public Dictionary<Guid, ISimulationMessage> _InstructionStore = new Dictionary<Guid, ISimulationMessage>();
@@ -26,14 +25,22 @@ namespace AkkaSim
         /// </summary>
         private long _nextInterupt { get; set; } = 0;
 
-        
+        /// <summary>
+        /// Set to true when the Simulation hase no events in Queue or has recieved a SimulationState.Finish message
+        /// </summary>
         private bool _IsComplete { get; set; } = false;
-        
-        private long TimePeriod { get; set; }
-        public bool _IsRunning { get; set; } = false;
+        /// <summary>
+        /// Set to false when the Simulation recieved a Command.Stop, time will no longer advance.
+        /// </summary>
+        private bool _IsRunning { get; set; } = false;
 
         /// <summary>
-        /// Constructor for Simulation context
+        /// Contains the current simulation Time
+        /// </summary>
+        private long TimePeriod { get; set; }
+
+        /// <summary>
+        /// Probe Constructor for Simulation context
         /// </summary>
         /// <returns>IActorRef of the SimulationContext</returns>
         public static Props Props(SimulationConfig config)
@@ -59,12 +66,15 @@ namespace AkkaSim
 
         }
 
+        /// <summary>
+        /// Debuging Mode Stores the Messages and enables Message Tracking for the Simulation Run.
+        /// </summary>
         private void DebugMode()
         {
 
             Receive<Command>(s => s == Command.Start, s =>
             {
-                if (_InstructionStore.Count() == 0)
+                if (_InstructionStore.Any())
                 //if (_CurrentInstructions == 0)
                 {
                     _IsRunning = true;
@@ -83,7 +93,7 @@ namespace AkkaSim
             // Determine when The initialisation is Done.
             Receive<Command>(s => s == Command.IsReady, s =>
             {
-                if (_InstructionStore.Count() == 0)
+                if (_InstructionStore.Any())
                 //if (_CurrentInstructions == 0)
                 {
                     Sender.Tell(Command.IsReady, ActorRefs.NoSender);
@@ -98,7 +108,7 @@ namespace AkkaSim
             // Determine when The Simulation is Done.
             Receive<SimulationState>(s => s == SimulationState.Finished, s =>
             {
-                if (_InstructionStore.Count() == 0)
+                if (_InstructionStore.Any())
                 {
                     _SimulationConfig.Inbox.Receiver.Tell(SimulationState.Finished);
                     _IsComplete = true;
@@ -126,7 +136,7 @@ namespace AkkaSim
 
             Receive<Shutdown>(c =>
             {
-                if (_InstructionStore.Count() == 0 && _FeatureStore.Count() == 0)
+                if (_InstructionStore.Any() && _FeatureStore.Any())
                 //if (_CurrentInstructions == 0 && _FeaturedInstructions.Count() == 0)
                 {
                     System.Diagnostics.Debug.WriteLine("Simulation Finished...", "AKKA");
@@ -171,6 +181,10 @@ namespace AkkaSim
             });
         }
 
+        /// <summary>
+        /// Enables Message logging for explicit Messages
+        /// </summary>
+        /// <param name="message"></param>
         private void LogInterceptor(ISimulationMessage message)
         {
             if (message.LogThis)
@@ -179,6 +193,9 @@ namespace AkkaSim
             }
         }
 
+        /// <summary>
+        /// Does not track Simulation Messages, only the amount that has to be processed
+        /// </summary>
         private void NormalMode()
         {
 
@@ -287,6 +304,7 @@ namespace AkkaSim
             });
         }
 
+        
         private void Advance()
         {
             if (_IsRunning && !_IsComplete && _CurrentInstructions == 0)
