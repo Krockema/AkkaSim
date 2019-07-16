@@ -19,7 +19,7 @@ namespace AkkaSim
         public Simulation(SimulationConfig simConfig)
         {
             Config config = (simConfig.Debug) ? ConfigurationFactory.ParseString(GetConfiguration()) 
-                         /* else */ : ConfigurationFactory.Load();
+                                   /* else */ : ConfigurationFactory.Load();
 
             ActorSystem  = ActorSystem.Create(SimulationContextName, config);
             simConfig.Inbox = Inbox.Create(ActorSystem);

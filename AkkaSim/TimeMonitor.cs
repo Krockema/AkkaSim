@@ -16,8 +16,8 @@ namespace AkkaSim
             TimeReporter = report;
             #endregion
             
-            Receive<SimulationMessage.AdvanceTo>(dl => 
-                report(dl.TimePeriod)
+            Receive<SimulationMessage.AdvanceTo>(dl =>
+                TimeReporter(dl.TimePeriod)
             );
         }
 

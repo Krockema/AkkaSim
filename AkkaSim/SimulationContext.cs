@@ -4,6 +4,7 @@ using AkkaSim.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using static AkkaSim.Definitions.SimulationMessage;
 
 namespace AkkaSim
@@ -74,7 +75,7 @@ namespace AkkaSim
 
             Receive<Command>(s => s == Command.Start, s =>
             {
-                if (_InstructionStore.Any())
+                if (!_InstructionStore.Any())
                 //if (_CurrentInstructions == 0)
                 {
                     _IsRunning = true;
@@ -264,7 +265,8 @@ namespace AkkaSim
             {
                 if (_CurrentInstructions == 0 && _FeaturedInstructions.Count() == 0)
                 {
-                    CoordinatedShutdown.Get(Context.System).Run();
+                    CoordinatedShutdown.Get(Context.System)
+                                       .Run(CoordinatedShutdown.ClrExitReason.Instance);
                 }
             });
 

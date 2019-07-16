@@ -4,13 +4,14 @@ using AkkaSim;
 using SimTest.Domain;
 using SimTest.Machine;
 using System;
+using System.Collections.Generic;
 
 namespace SimTest.Monitoring
 {
     public class WorkTimeMonitor : SimulationMonitor
     {
         public WorkTimeMonitor(long time) 
-            : base(time, typeof(MachineAgent.FinishWork))
+            : base(time, new List<Type> { typeof(MachineAgent.FinishWork) })
         {
         }
 
