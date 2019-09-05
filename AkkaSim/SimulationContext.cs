@@ -141,7 +141,7 @@ namespace AkkaSim
                 //if (_CurrentInstructions == 0 && _FeaturedInstructions.Count() == 0)
                 {
                     System.Diagnostics.Debug.WriteLine("Simulation Finished...", "AKKA");
-                    CoordinatedShutdown.Get(Context.System).Run();
+                    CoordinatedShutdown.Get(Context.System).Run(CoordinatedShutdown.ClrExitReason.Instance);
                 }
             });
 
@@ -364,16 +364,6 @@ namespace AkkaSim
             // get current Tasks
             MoveFeaturesToCurrentTimeSpan();
             
-        }
-
-        private void SystemShutdown()
-        {
-            Context.System
-                   .Scheduler
-                   .ScheduleTellOnce(TimeSpan.FromSeconds(1)
-                                     , Self
-                                     , new Shutdown(Self)
-                                     , ActorRefs.NoSender);
         }
 
         private void MoveFeaturesToCurrentTimeSpan_Debug()

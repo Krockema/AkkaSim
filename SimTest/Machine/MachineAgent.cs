@@ -3,8 +3,7 @@ using AkkaSim;
 using SimTest.Domain;
 using System;
 using SimTest.MachineQueue;
-using Akka.Event;
-using SimTest.SimulationHelper;
+using System.Diagnostics;
 
 namespace SimTest.Machine
 {
@@ -15,7 +14,7 @@ namespace SimTest.Machine
 
         public MachineAgent(IActorRef simulationContext, long time) : base(simulationContext, time)
         {
-            Console.WriteLine("Time: " + TimePeriod + " - " + Self.Path + " is Ready");
+             Debug.WriteLine("Time: " + TimePeriod + " - " + Self.Path + " is Ready");
         }
         public static Props Props(IActorRef simulationContext, long time)
         {

@@ -1,7 +1,9 @@
-﻿using Akka.Actor;
+﻿using System;
+using Akka.Actor;
 using Akka.Configuration;
 using AkkaSim.Definitions;
 using System.Threading.Tasks;
+using Akka.Event;
 using static AkkaSim.Definitions.SimulationMessage;
 
 namespace AkkaSim
@@ -48,7 +50,7 @@ namespace AkkaSim
         }
 
         /// <summary>
-        /// should later read from app.config or dynamicly created
+        /// should later read from app.config or dynamically created
         /// </summary>
         /// <returns></returns>
         private string GetConfiguration()

@@ -6,7 +6,7 @@ using System;
 namespace AkkaSim.Definitions
 {
     /// <summary>
-    /// Data Stuckture 
+    /// Data Structure 
     /// </summary>
     public class SimulationMessage : IComparable<ISimulationMessage>, ISimulationElement, ISimulationMessage
     {
@@ -15,11 +15,11 @@ namespace AkkaSim.Definitions
         /// </summary>
         public Guid Key { get; }
         /// <summary>
-        /// !- Imutable -! Message Object
+        /// !- Immutable -! Message Object
         /// </summary>
         public object Message { get; }
         /// <summary>
-        /// Target Actor to whom the Simulation Messageshall be forwarded.
+        /// Target Actor to whom the Simulation Message shall be forwarded.
         /// </summary>
         public IActorRef Target { get; }
         /// <summary>
@@ -42,6 +42,9 @@ namespace AkkaSim.Definitions
             IsReady
         }
 
+        /// <summary>
+        /// Used to build a start / stop / mechanic with this 
+        /// </summary>
         public enum SimulationState
         {
             Stopped,
@@ -72,22 +75,26 @@ namespace AkkaSim.Definitions
         }
 
         /// <summary>
-        /// Agent Intern  finish current Actor and tell parrents
+        /// Agent Intern  finish current Actor and tell parents
         /// </summary>
         internal class Finish : SimulationMessage
         {
-            public Finish(IActorRef parrent) 
-                : base(target: parrent, message: null) { }
+            public Finish(IActorRef parent) 
+                : base(target: parent, message: null) { }
 
         };
 
-        internal class Shutdown : SimulationMessage
+        /// <summary>
+        /// Use this message to force System shutdown, it waits till all messages for the current timespan are processed
+        /// and then terminates the System, regardless of feature messages.
+        /// </summary>
+        public class Shutdown : SimulationMessage
         {
-            public Shutdown(IActorRef target) : base(null, target, false, Priority.Low) { }
+            public Shutdown(IActorRef simulationContextRef) : base(null, simulationContextRef, false, Priority.Low) { }
         }
 
         /// <summary>
-        /// Message to Advance the local clock time of each registred SimulationElement.
+        /// Message to Advance the local clock time of each registered SimulationElement.
         /// </summary>
         internal class AdvanceTo
         {
@@ -97,18 +104,6 @@ namespace AkkaSim.Definitions
                 TimePeriod = time;
             }
         }
-        /// <summary>
-        /// Message to Advance the local clock time of each registred SimulationElement.
-        /// </summary>
-        internal class SetInterruptionInterval
-        {
-            public long Interval { get; }
-            public SetInterruptionInterval(long time)
-            {
-                Interval = time;
-            }
-        }
-
 
         /// <summary>
         /// A Wrapper for messages to pop after given delay
@@ -116,7 +111,7 @@ namespace AkkaSim.Definitions
         public class Schedule
         {
             /// <summary>
-            /// Amount of Timesteps the message should be delayed
+            /// Amount of TimeSteps the message should be delayed
             /// </summary>
             public long Delay { get; }
             public ISimulationMessage Message { get; }
@@ -148,6 +143,7 @@ namespace AkkaSim.Definitions
         /// </summary>
         /// <param name="message"></param>
         /// <param name="targetSelection"></param>
+        /// <param name="logThis"></param>
         /// <param name="priority"></param>
         protected SimulationMessage(object message, ActorSelection targetSelection,bool logThis = false, Priority priority = Priority.Medium)
         {
