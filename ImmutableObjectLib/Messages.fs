@@ -25,18 +25,18 @@ type ISumulationMessage =
     inherit ISumulationElement 
     inherit IRawMessage
 
-type public TestItem =
+type public Item =
     {
         Key : Guid
         Text : String
     }
     with member this.Update t = { this with Text = t }
 
-type public Message =
+type public ImutableMessage =
     { Key : Guid
       Target : string
       Object: obj
-      List: System.Collections.Generic.List<TestItem>
+      List: System.Collections.Generic.List<Item>
       Priority: Priority } 
     interface ISumulationMessage with 
         member this.Key  with get() = this.Key
@@ -49,11 +49,11 @@ type public Message =
     member this.UpdatePriority p = { this with Priority = p }
     
 
-type public MessageType2 =
+type public ImutableElementMessage =
     { Key : Guid
       Target : string
       Object: obj
-      List: System.Collections.Generic.List<TestItem>
+      List: System.Collections.Generic.List<Item>
       Priority: Priority 
       } 
     interface ISumulationElement with 

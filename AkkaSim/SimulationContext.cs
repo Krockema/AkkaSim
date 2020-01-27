@@ -1,10 +1,11 @@
 ﻿using Akka.Actor;
 using AkkaSim.Definitions;
 using AkkaSim.Interfaces;
+using AkkaSim.Logging;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using static AkkaSim.Definitions.SimulationMessage;
 
 namespace AkkaSim
@@ -18,9 +19,10 @@ namespace AkkaSim
         // for Debugging Mode
         public Dictionary<Guid, ISimulationMessage> _InstructionStore = new Dictionary<Guid, ISimulationMessage>();
         public Dictionary<long, Dictionary<Guid, ISimulationMessage>> _FeatureStore = new Dictionary<long, Dictionary<Guid, ISimulationMessage>>();
+        private Logger _Logger = LogManager.GetLogger(TargetNames.LOG_AKKA);
 
         private SimulationConfig _SimulationConfig { get; }
-
+        
         /// <summary>
         /// Contains the next interval time where the simulation will stop.
         /// </summary>
@@ -57,7 +59,7 @@ namespace AkkaSim
 
             #endregion init
 
-            if (config.Debug == true)
+            if (config.DebugAkkaSim)
             {
                 Become(DebugMode);
             } else
@@ -79,7 +81,7 @@ namespace AkkaSim
                 //if (_CurrentInstructions == 0)
                 {
                     _IsRunning = true;
-                    _nextInterupt = _nextInterupt + _SimulationConfig.InteruptInterval;
+                    _nextInterupt = _nextInterupt + _SimulationConfig.InterruptInterval;
                     _SimulationConfig.Inbox.Receiver.Tell(SimulationState.Started);
                     
                     Advance_Debug();
@@ -123,15 +125,17 @@ namespace AkkaSim
 
             Receive<Done>(c =>
             {
-                if (!_InstructionStore.Remove(((ISimulationMessage)c.Message).Key)) throw new Exception("Failed to remove message from Instruction store");
-                System.Diagnostics.Debug.WriteLine("-- Done(" + _InstructionStore.Count() + ") ", "AKKA");
+                if (!_InstructionStore.Remove(((ISimulationMessage)c.Message).Key)) 
+                    throw new Exception("Failed to remove message from Instruction store");
+                _Logger.Log(LogLevel.Trace ,"--Done {one}", new object[] { _InstructionStore.Count() });
                 Advance_Debug();
             });
 
             Receive<Command>(c => c == Command.Stop, c =>
             {
                 // Console.WriteLine("-- Resume simulation -- !");
-                System.Diagnostics.Debug.WriteLine("STOP", "AKKA");
+                
+                _Logger.Info("Command Stop --Done {one}", new object[] { _InstructionStore.Count() });
                 _IsRunning = false;
             });
 
@@ -140,7 +144,7 @@ namespace AkkaSim
                 if (_InstructionStore.Any() && _FeatureStore.Any())
                 //if (_CurrentInstructions == 0 && _FeaturedInstructions.Count() == 0)
                 {
-                    System.Diagnostics.Debug.WriteLine("Simulation Finished...", "AKKA");
+                    _Logger.Log(LogLevel.Trace ,"Simulation Finished...");
                     CoordinatedShutdown.Get(Context.System).Run(CoordinatedShutdown.ClrExitReason.Instance);
                 }
             });
@@ -178,7 +182,7 @@ namespace AkkaSim
                 }
                 //_CurrentInstructions++;
                 _InstructionStore.Add(m.Key, m);
-                System.Diagnostics.Debug.WriteLine(" DO ++ (" + _InstructionStore.Count() + ")" + m.GetType().ToString(), "AKKA");
+                _Logger.Log(LogLevel.Trace ," DO ++ ({arg1}) {arg2}", new object[] { _InstructionStore.Count(), m.GetType().ToString() });
             });
         }
 
@@ -205,7 +209,7 @@ namespace AkkaSim
                 if (_CurrentInstructions == 0)
                 {
                     _IsRunning = true;
-                    _nextInterupt = _nextInterupt + _SimulationConfig.InteruptInterval;
+                    _nextInterupt = _nextInterupt + _SimulationConfig.InterruptInterval;
                     _SimulationConfig.Inbox.Receiver.Tell(SimulationState.Started);
                     Advance();
                 }
@@ -279,7 +283,7 @@ namespace AkkaSim
                 if (_FeaturedInstructions.TryGetValue(sheduleAt, out long value))
                     _FeaturedInstructions[sheduleAt] = _FeaturedInstructions[sheduleAt] + 1;
                 else
-                    { _FeaturedInstructions.Add(sheduleAt, 1); }
+                { _FeaturedInstructions.Add(sheduleAt, 1); }
                 
                 m.Message.Target.Forward(m);
             });
@@ -381,7 +385,8 @@ namespace AkkaSim
                 // global Tick
                 var tick = new AdvanceTo(TimePeriod);
                 Context.System.EventStream.Publish(tick);
-                System.Diagnostics.Debug.WriteLine("Move To: " + TimePeriod + " open " + _InstructionStore.Count(), "AKKA");
+                _Logger.Info("Move To: {TimePeriod} | open: {arg}"
+                    , new object[] { TimePeriod, _InstructionStore.Count() });
             }
         }
 

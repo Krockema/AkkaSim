@@ -3,7 +3,6 @@ using Akka.Actor;
 using Akka.Configuration;
 using AkkaSim.Definitions;
 using System.Threading.Tasks;
-using Akka.Event;
 using static AkkaSim.Definitions.SimulationMessage;
 
 namespace AkkaSim
@@ -13,20 +12,21 @@ namespace AkkaSim
         public const string SimulationContextName = "SimulationContext";
         public ActorSystem ActorSystem { get; }
         public IActorRef SimulationContext { get; }
-
         /// <summary>
         /// Prepare Simulation Environment
         /// </summary>
         /// <param name="debug">Enables AKKA-Global message Debugging</param>
         public Simulation(SimulationConfig simConfig)
         {
-            Config config = (simConfig.Debug) ? ConfigurationFactory.ParseString(GetConfiguration()) 
-                                   /* else */ : ConfigurationFactory.Load();
-
+            Config config = (simConfig.DebugAkka) ? ConfigurationFactory.ParseString(GetConfiguration(NLog.LogLevel.Debug)) 
+                                       /* else */ : ConfigurationFactory.ParseString(GetConfiguration(NLog.LogLevel.Info));
+            
             ActorSystem  = ActorSystem.Create(SimulationContextName, config);
             simConfig.Inbox = Inbox.Create(ActorSystem);
             SimulationContext = ActorSystem.ActorOf(Props.Create(() => new SimulationContext(simConfig)), SimulationContextName);
         }
+
+        
 
         public bool IsReady()
         {
@@ -53,21 +53,23 @@ namespace AkkaSim
         /// should later read from app.config or dynamically created
         /// </summary>
         /// <returns></returns>
-        private string GetConfiguration()
+        private string GetConfiguration(NLog.LogLevel level)
         {
-            return @"  akka {
-                        stdout-loglevel = DEBUG
-                        loglevel = DEBUG
-                        log-config-on-start = on
-                        actor {
-                            debug {
-                                receive = on
-                                autoreceive = on
-                                lifecycle = on
-                                event-stream = on
-                                unhandled = on
-                                }
-                            }";
+            return @"akka {
+                      stdout-loglevel = " + level.Name + @"
+                      loglevel = " + level.Name + @"
+                      loggers=[""Akka.Logger.NLog.NLogLogger, Akka.Logger.NLog""]
+                      log-dead-letters-during-shutdown = off
+                      log-config-on-start = on
+                      actor {
+                          debug {
+                              receive = on
+                              autoreceive = on
+                              lifecycle = on
+                              event-stream = on
+                              unhandled = on
+                              }
+                          }";
         }
     }
 }

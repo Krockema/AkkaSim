@@ -3,6 +3,10 @@ using AkkaSim.Interfaces;
 using AkkaSim.Definitions;
 using System;
 using System.Collections.Generic;
+using Akka.Event;
+using Akka.Logger.NLog;
+using AkkaSim.Logging;
+using NLog;
 using static AkkaSim.Definitions.SimulationMessage;
 
 namespace AkkaSim
@@ -14,6 +18,8 @@ namespace AkkaSim
         /// </summary>
         protected IActorRef _SimulationContext { get; }
 
+
+        public Logger Logger { get; }
         /// <summary>
         /// Guid of the current element
         /// </summary>
@@ -41,9 +47,10 @@ namespace AkkaSim
 
         public SimulationElement(IActorRef simulationContext, long time)
         {
-            Key = Guid.NewGuid();
             #region Init
 
+            Key = Guid.NewGuid();
+            Logger = LogManager.GetLogger(TargetNames.LOG_AGENTS);
             TimePeriod = time;
             _SimulationContext = simulationContext;
 
@@ -59,7 +66,7 @@ namespace AkkaSim
             Receive<AdvanceTo>(m => AdvanceTo(m.TimePeriod));
 
             // any Message that is not handled internaly
-            ReceiveAny(m => MapMessageToMethod(m));
+            ReceiveAny(MapMessageToMethod);
         }
 
         /// <summary>

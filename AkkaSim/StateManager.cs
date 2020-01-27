@@ -1,11 +1,14 @@
 ﻿using Akka.Actor;
 using AkkaSim.Definitions;
 using System;
+using AkkaSim.Logging;
+using NLog;
 
 namespace AkkaSim
 {
     public class StateManager
     {
+        Logger Logger = LogManager.GetLogger(TargetNames.LOG_AKKA);
         /// <summary>
         /// Method do handle simulation State
         /// </summary>
@@ -30,7 +33,8 @@ namespace AkkaSim
                         sim.ActorSystem.Terminate();
                         break;
                     default:
-                        throw new Exception($"Unhandled simulation state received: {message}");
+                        Logger.Log(LogLevel.Warn, "StateManager: Unhandled message -> " + message.Result.GetType() + "recived!");
+                        break;
                 }
                 break;
             }

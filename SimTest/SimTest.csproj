@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AkkaSim\AkkaSim.csproj" />
-    <ProjectReference Include="..\ImmutableObjectLib\ImmutableObjectLib.fsproj" />
   </ItemGroup>
 
 </Project>

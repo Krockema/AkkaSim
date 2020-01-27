@@ -7,6 +7,8 @@ using SimTest.Machine;
 using System.Linq;
 using System;
 using Akka.Event;
+using NLog.Fluent;
+using LogLevel = NLog.LogLevel;
 
 namespace SimTest.MachineQueue
 {
@@ -26,6 +28,7 @@ namespace SimTest.MachineQueue
         public MachineJobDistributor(IActorRef simulationContext, long time) 
             : base(simulationContext, time)
         {
+            
         }
 
         protected override void Do(object o)
@@ -87,6 +90,7 @@ namespace SimTest.MachineQueue
 
         private void CreateMachines(int machineNumber, long time)
         {
+            Logger.Log(LogLevel.Warn, "Creating Maschine No: {arg} !",  new object[] { machineNumber });
             Machines.Add(Context.ActorOf(MachineAgent.Props(_SimulationContext, time), "Maschine_" + machineNumber), true);
         }
 
@@ -95,7 +99,7 @@ namespace SimTest.MachineQueue
             var po = o as ProductionOrderFinished;
             var request = po.Message as MaterialRequest;
             if (request.Material.Name == "Table")
-                Console.WriteLine("Table No: "+ ++MaterialCounter);
+                Logger.Log(LogLevel.Info, "Simulation: Table No: {arg} has finished",  new object[] { ++MaterialCounter });
             //Console.WriteLine("Time: " + TimePeriod + " Number " + MaterialCounter + " Finished: " + request.Material.Name);
             if (!request.IsHead)
             {
@@ -118,7 +122,7 @@ namespace SimTest.MachineQueue
 
         protected override void Finish()
         {
-            Console.WriteLine(Sender.Path + " has been Killed");
+            Logger.Log(LogLevel.Debug, "Simulation: {arg} has been Killed",  new object[] { Sender.Path });
         }
     }
 }
