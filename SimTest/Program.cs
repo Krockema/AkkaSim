@@ -1,20 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using AkkaSim;
+﻿using AkkaSim;
+using AkkaSim.Definitions;
+using AkkaSim.Logging;
 using SimTest.Domain;
 using SimTest.MachineQueue;
-using ImmutableObjectLib;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Linq;
-using AkkaSim.Definitions;
-using Akka.Actor;
-using Akka.Event;
-using AkkaSim.Logging;
-using NLog;
-using NLog.Common;
-using NLog.Config;
-using NLog.Targets;
+using System;
+using System.Collections.Generic;
 using LogLevel = NLog.LogLevel;
 
 namespace SimTest
