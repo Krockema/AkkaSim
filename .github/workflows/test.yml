@@ -19,7 +19,7 @@ jobs:
 
       # Build
       - name: Build with dotnet
-        run: dotnet build --configuration Debug
+      - run: dotnet build --configuration Debug
       # Test
       - name: Run Unit Tests
       - run: dotnet test TestAkkaSim/TestAkkaSim.csproj
