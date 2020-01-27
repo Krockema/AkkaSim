@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using ImmutableObjectLib;
 
-namespace AkkaSim
+namespace TestAkkaSim
 {
     public class MessageFactory
     {
