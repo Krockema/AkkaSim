@@ -24,14 +24,16 @@ namespace AkkaSim
                 {
                     case SimulationMessage.SimulationState.Started:
                         this.AfterSimulationStarted(sim);
+                        Continuation(inbox: inbox, sim: sim);
                         break;
                     case SimulationMessage.SimulationState.Stopped:
                         this.AfterSimulationStopped(sim);
                         sim.Continue();
+                        Continuation(inbox, sim);
                         break;
                     case SimulationMessage.SimulationState.Finished:
                         this.SimulationIsTerminating(sim);
-                        sim.ActorSystem.Terminate();
+                        sim.ActorSystem.Terminate().Wait();
                         isRunning = false;
                         break;
                     default:
