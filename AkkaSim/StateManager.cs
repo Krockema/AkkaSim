@@ -19,19 +19,22 @@ namespace AkkaSim
             var isRunning = true;
             while (isRunning)
             {
-                var message = inbox.ReceiveAsync();
+                var message = inbox.ReceiveAsync(timeout: TimeSpan.FromHours(value: 1));
                 switch (message.Result)
                 {
                     case SimulationMessage.SimulationState.Started:
+                        Logger.Log(LogLevel.Warn, "Sim Started !");
                         this.AfterSimulationStarted(sim);
                         Continuation(inbox: inbox, sim: sim);
                         break;
                     case SimulationMessage.SimulationState.Stopped:
+                        Logger.Log(LogLevel.Warn, "Sim Stopped !");
                         this.AfterSimulationStopped(sim);
                         sim.Continue();
                         Continuation(inbox, sim);
                         break;
                     case SimulationMessage.SimulationState.Finished:
+                        Logger.Log(LogLevel.Warn, "Sim Finished !");
                         this.SimulationIsTerminating(sim);
                         sim.ActorSystem.Terminate().Wait();
                         isRunning = false;

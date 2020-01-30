@@ -21,13 +21,14 @@ namespace SimTest
            
             LogConfiguration.LogTo(TargetTypes.File, TargetNames.LOG_AGENTS, LogLevel.Info, LogLevel.Warn);
             LogConfiguration.LogTo(TargetTypes.Console, TargetNames.LOG_AGENTS, LogLevel.Info);
+            LogConfiguration.LogTo(TargetTypes.Console, TargetNames.LOG_AKKA, LogLevel.Warn);
             LogConfiguration.LogTo(TargetTypes.File, TargetNames.LOG_AKKA, LogLevel.Trace);
             //InternalLogger.LogToConsole = true;
             //InternalLogger.LogLevel = LogLevel.Trace;
 
             SimulationConfig simConfig = new SimulationConfig(debugAkka: false
                                                             , debugAkkaSim: true
-                                                            , interruptInterval: 480);
+                                                            , interruptInterval: 120);
             var sim = new Simulation(simConfig);
             var r = new Random();
 
@@ -43,7 +44,7 @@ namespace SimTest
                 sim.SimulationContext.Tell(createMachines, null);
             }
 
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 300; i++)
             {
                 var materialRequest = new MaterialRequest(CreateBOM(), new Dictionary<int, bool>(), 0, r.Next(50, 500), true);
                 var request = new MachineJobDistributor.ProductionOrder(materialRequest, jobDistributor);
