@@ -16,27 +16,28 @@ namespace AkkaSim
         /// <param name="sim"></param>
         public void Continuation(Inbox inbox, Simulation sim)
         {
-            while (true)
+            var isRunning = true;
+            while (isRunning)
             {
                 var message = inbox.ReceiveAsync();
                 switch (message.Result)
                 {
                     case SimulationMessage.SimulationState.Started:
                         this.AfterSimulationStarted(sim);
-                        continue;
+                        break;
                     case SimulationMessage.SimulationState.Stopped:
                         this.AfterSimulationStopped(sim);
                         sim.Continue();
-                        continue;
+                        break;
                     case SimulationMessage.SimulationState.Finished:
                         this.SimulationIsTerminating(sim);
                         sim.ActorSystem.Terminate();
+                        isRunning = false;
                         break;
                     default:
                         Logger.Log(LogLevel.Warn, "StateManager: Unhandled message -> " + message.Result.GetType() + "recived!");
                         break;
                 }
-                break;
             }
         }
 

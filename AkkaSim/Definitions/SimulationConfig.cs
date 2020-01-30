@@ -7,7 +7,8 @@ namespace AkkaSim.Definitions
         /// <summary>
         /// Global Simulation Configuration 
         /// </summary>
-        /// <param name="debug">Debug the Agent System</param>
+        /// <param name="debugAkka">Debug the Akka Core System</param>
+        /// <param name="debugAkkaSim">Set Akka Simulation in Debug Behaviour</param>
         /// <param name="interruptInterval">At what TimeSpan shall the system stop and wait for further Commands
         /// the System will continue by calling the SimulationContext.Coninue() method.
         /// </param>

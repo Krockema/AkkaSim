@@ -125,9 +125,10 @@ namespace AkkaSim
 
             Receive<Done>(c =>
             {
-                if (!_InstructionStore.Remove(((ISimulationMessage)c.Message).Key)) 
+                var key = ((ISimulationMessage) c.Message).Key;
+                if (!_InstructionStore.Remove(key))
                     throw new Exception("Failed to remove message from Instruction store");
-                _Logger.Log(LogLevel.Trace ,"--Done {one}", new object[] { _InstructionStore.Count() });
+                _Logger.Log(LogLevel.Trace ," {arg1} --Done {arg2}", new object[] { key, _InstructionStore.Count() });
                 Advance_Debug();
             });
 
@@ -135,7 +136,7 @@ namespace AkkaSim
             {
                 // Console.WriteLine("-- Resume simulation -- !");
                 
-                _Logger.Info("Command Stop --Done {one}", new object[] { _InstructionStore.Count() });
+                _Logger.Info("Command Stop --Done {arg1} Stop", new object[] { _InstructionStore.Count() });
                 _IsRunning = false;
             });
 
@@ -182,7 +183,7 @@ namespace AkkaSim
                 }
                 //_CurrentInstructions++;
                 _InstructionStore.Add(m.Key, m);
-                _Logger.Log(LogLevel.Trace ," DO ++ ({arg1}) {arg2}", new object[] { _InstructionStore.Count(), m.GetType().ToString() });
+                _Logger.Log(LogLevel.Trace ," {arg1} DO ++ ({arg2}) {arg3}", new object[] {  m.Key , _InstructionStore.Count(), m.GetType().ToString()});
             });
         }
 
@@ -329,7 +330,7 @@ namespace AkkaSim
 
         private void Advance_Debug()
         {
-            if (_IsRunning && !_IsComplete && _InstructionStore.Count() == 0)
+            if (_IsRunning && !_IsComplete && _InstructionStore.Count == 0)
             {
                 if (_FeatureStore.Count != 0)
                 {
