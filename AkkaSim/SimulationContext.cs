@@ -6,6 +6,7 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.VisualBasic;
 using static AkkaSim.Definitions.SimulationMessage;
 
 namespace AkkaSim
@@ -125,10 +126,10 @@ namespace AkkaSim
 
             Receive<Done>(c =>
             {
-                var key = ((ISimulationMessage) c.Message).Key;
-                if (!_InstructionStore.Remove(key))
+                var msg = ((ISimulationMessage) c.Message);
+                if (!_InstructionStore.Remove(msg.Key))
                     throw new Exception("Failed to remove message from Instruction store");
-                _Logger.Log(LogLevel.Trace ," {arg1} --Done {arg2}", new object[] { key, _InstructionStore.Count() });
+                _Logger.Log(LogLevel.Trace ," {arg1} --Done {arg2} ", new object[] { msg.Key, _InstructionStore.Count() });
                 Advance_Debug();
             });
 
@@ -167,23 +168,27 @@ namespace AkkaSim
             Receive<ISimulationMessage>(m =>
             {
                 LogInterceptor(m);
+                IActorRef target;
                 if (m.Target != ActorRefs.NoSender)
                 {
                     m.Target.Forward(m);
+                    target = m.Target;
 
                 }
                 else if (m.TargetSelection != null)
                 {
                     m.TargetSelection.Tell(m);
+                    target = Sender;
                 }
                 else
                 {
                     // ping back
                     Sender.Tell(m);
+                    target = Sender;
                 }
                 //_CurrentInstructions++;
                 _InstructionStore.Add(m.Key, m);
-                _Logger.Log(LogLevel.Trace ," {arg1} DO ++ ({arg2}) {arg3}", new object[] {  m.Key , _InstructionStore.Count(), m.GetType().ToString()});
+                _Logger.Log(LogLevel.Trace ," {arg1} DO ++ Instructions: {arg2} Type: {arg3} | Sender: {arg4} | Target: {arg5}", new object[] {  m.Key , _InstructionStore.Count(), m.GetType().ToString(), Sender.Path.Name, target.Path.Name });
             });
         }
 
@@ -386,7 +391,7 @@ namespace AkkaSim
                 // global Tick
                 var tick = new AdvanceTo(TimePeriod);
                 Context.System.EventStream.Publish(tick);
-                _Logger.Info("Move To: {TimePeriod} | open: {arg}"
+                _Logger.Log( LogLevel.Debug, "Move To: {TimePeriod} | open: {arg}"
                     , new object[] { TimePeriod, _InstructionStore.Count() });
             }
         }

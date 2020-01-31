@@ -5,6 +5,7 @@ using SimTest.Domain;
 using SimTest.MachineQueue;
 using System;
 using System.Collections.Generic;
+using Akka.Dispatch.SysMsg;
 using LogLevel = NLog.LogLevel;
 
 namespace SimTest
@@ -59,11 +60,12 @@ namespace SimTest
 
             if (sim.IsReady())
             {
-                sim.RunAsync();
+                var terminated = sim.RunAsync();
                 new StateManager().Continuation(simConfig.Inbox, sim);
+                terminated.Wait();
             }
 
-            Console.WriteLine("Systen shutdown. . . ");
+            Console.WriteLine("Systen is shutdown!");
             Console.WriteLine("System Runtime " + sim.ActorSystem.Uptime);
 
             Console.ReadLine();

@@ -30,6 +30,8 @@ namespace AkkaSim.Logging
                         {
                             FileName = "${basedir}/Logs/" + target + ".log"
                             ,Layout = LogLayout
+                            , KeepFileOpen = true
+                            , ArchiveOldFileOnStartup = true
                         };
                     break;
 
@@ -45,6 +47,13 @@ namespace AkkaSim.Logging
                         {
                             Layout = LogLayout
                         };
+                    break;
+
+                case TargetTypes.Debugger:
+                    loggingTarget = new DebuggerTarget(target)
+                    {
+                        Layout = LogLayout
+                    };
                     break;
                 default: throw new Exception("No valid logging target found.");
             }

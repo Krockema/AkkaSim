@@ -7,7 +7,7 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <Description>DES Simulation implementation, with pesimistic central clock</Description>
     <Copyright>MIT</Copyright>
-    <Version>0.4.4</Version>
+    <Version>0.4.6</Version>
     <PackageReleaseNotes>Debuging Enabled.</PackageReleaseNotes>
     <License>https://github.com/Krockema/AkkaSim/blob/master/LICENSE</License>
     <Authors>Krockert, Martin</Authors>

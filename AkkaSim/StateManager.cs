@@ -8,7 +8,8 @@ namespace AkkaSim
 {
     public class StateManager
     {
-        Logger Logger = LogManager.GetLogger(TargetNames.LOG_AKKA);
+        private Logger Logger = LogManager.GetLogger(TargetNames.LOG_AKKA);
+        private bool isRunning = true;
         /// <summary>
         /// Method do handle simulation State
         /// </summary>
@@ -16,11 +17,10 @@ namespace AkkaSim
         /// <param name="sim"></param>
         public void Continuation(Inbox inbox, Simulation sim)
         {
-            var isRunning = true;
             while (isRunning)
             {
-                var message = inbox.ReceiveAsync(timeout: TimeSpan.FromHours(value: 1));
-                switch (message.Result)
+                var message = inbox.ReceiveAsync(timeout: TimeSpan.FromHours(value: 1)).Result;
+                switch (message)
                 {
                     case SimulationMessage.SimulationState.Started:
                         Logger.Log(LogLevel.Warn, "Sim Started !");
@@ -40,7 +40,7 @@ namespace AkkaSim
                         isRunning = false;
                         break;
                     default:
-                        Logger.Log(LogLevel.Warn, "StateManager: Unhandled message -> " + message.Result.GetType() + "recived!");
+                        Logger.Log(LogLevel.Warn, "StateManager: Unhandled message -> " + message.GetType() + "recived!");
                         break;
                 }
             }
