@@ -1,4 +1,4 @@
-﻿using Akka.Actor;
+using Akka.Actor;
 using AkkaSim.Definitions;
 using System;
 using AkkaSim.Logging;
