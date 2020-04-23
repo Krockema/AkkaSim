@@ -125,7 +125,7 @@ namespace AkkaSim
         public void Schedule(long delay, ISimulationMessage message)
         {
             var s = new Schedule(delay, message);
-            _SimulationContext.Tell(s, ActorRefs.NoSender);
+            _SimulationContext.Tell(s, this.Self);
         }
 
         private void ReleaseMessagesForThisTimeperiod()
