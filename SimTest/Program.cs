@@ -20,6 +20,13 @@ namespace SimTest
         {
             Console.WriteLine("Simulation world of Akka!");
            
+            RunSimulation();
+
+            Console.ReadLine();
+        }
+
+        private static void RunSimulation()
+        {
             LogConfiguration.LogTo(TargetTypes.File, TargetNames.LOG_AGENTS, LogLevel.Info, LogLevel.Warn);
             LogConfiguration.LogTo(TargetTypes.Console, TargetNames.LOG_AGENTS, LogLevel.Info);
             LogConfiguration.LogTo(TargetTypes.Console, TargetNames.LOG_AKKA, LogLevel.Warn);
@@ -28,14 +35,17 @@ namespace SimTest
             //InternalLogger.LogLevel = LogLevel.Trace;
 
             SimulationConfig simConfig = new SimulationConfig(debugAkka: false
-                                                            , debugAkkaSim: true
-                                                            , interruptInterval: 120);
+                , debugAkkaSim: true
+                , addApplicationInsights: false
+                , interruptInterval: 120);
             var sim = new Simulation(simConfig);
             var r = new Random();
 
             Console.ReadKey();
 
-            var jobDistributor = sim.ActorSystem.ActorOf(MachineJobDistributor.Props(sim.ActorSystem.EventStream, sim.SimulationContext, 0), "JobDistributor");
+            var jobDistributor =
+                sim.ActorSystem.ActorOf(MachineJobDistributor.Props(sim.ActorSystem.EventStream, sim.SimulationContext, 0),
+                    "JobDistributor");
 
             // Tell all Machines
             for (int i = 0; i < 3; i++)
@@ -55,8 +65,8 @@ namespace SimTest
             // example to monitor for FinishWork Messages.
 
             var monitor = sim.ActorSystem.ActorOf(props: Monitoring.WorkTimeMonitor
-                                                                   .Props(time: 0),
-                                                   name: "SimulationMonitor");
+                    .Props(time: 0),
+                name: "SimulationMonitor");
 
             if (sim.IsReady())
             {
@@ -67,8 +77,6 @@ namespace SimTest
 
             Console.WriteLine("Systen is shutdown!");
             Console.WriteLine("System Runtime " + sim.ActorSystem.Uptime);
-
-            Console.ReadLine();
         }
 
 
