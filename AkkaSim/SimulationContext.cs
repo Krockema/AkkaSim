@@ -6,6 +6,8 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Akka.IO;
 using static AkkaSim.Definitions.SimulationMessage;
 
 namespace AkkaSim
@@ -43,6 +45,11 @@ namespace AkkaSim
         private long TimePeriod { get; set; }
 
         /// <summary>
+        /// Check for DebugMode that the simulation System is not running empty.
+        /// </summary>
+        private IActorRef Heart { get; set; }
+
+        /// <summary>
         /// Probe Constructor for Simulation context
         /// </summary>
         /// <returns>IActorRef of the SimulationContext</returns>
@@ -54,13 +61,12 @@ namespace AkkaSim
         public SimulationContext(SimulationConfig config)
         {
             #region init
-
             _SimulationConfig = config;
-
             #endregion init
 
             if (config.DebugAkkaSim)
             {
+                Heart = Context.ActorOf(HeartBeat.Props());
                 Become(DebugMode);
             } else
             {
@@ -247,7 +253,7 @@ namespace AkkaSim
         /// </summary>
         private void DebugMode()
         {
-
+             
             Receive<Command>(s => s == Command.Start, s =>
             {
                 if (!_InstructionStore.Any())
@@ -256,7 +262,7 @@ namespace AkkaSim
                     _IsRunning = true;
                     _nextInterupt = _nextInterupt + _SimulationConfig.InterruptInterval;
                     _SimulationConfig.Inbox.Receiver.Tell(SimulationState.Started);
-                    
+                    Heart.Tell(Command.HeartBeat, Self);
                     Advance_Debug();
                 }
                 else
@@ -266,10 +272,15 @@ namespace AkkaSim
                 }
             });
 
+            Receive<Command>(s => s == Command.HeartBeat,  s =>
+            {
+                Sender.Tell(Command.HeartBeat);
+            });
+
             // Determine when The initialisation is Done.
             Receive<Command>(s => s == Command.IsReady, s =>
             {
-                if (_InstructionStore.Any())
+                if (!_InstructionStore.Any())
                 //if (_CurrentInstructions == 0)
                 {
                     Sender.Tell(Command.IsReady, ActorRefs.NoSender);
@@ -301,7 +312,7 @@ namespace AkkaSim
                 var msg = ((ISimulationMessage) c.Message);
                 if (!_InstructionStore.Remove(msg.Key))
                     throw new Exception("Failed to remove message from Instruction store");
-                _Logger.Log(LogLevel.Trace ," {arg1} --Done {arg2} ", new object[] { msg.Key, _InstructionStore.Count() });
+                _Logger.Log(LogLevel.Trace ,"| Time[{arg1}] | {arg2} | --Done | Messages Left {arg3} ", new object[] { TimePeriod, msg.Key, _InstructionStore.Count() });
                 Advance_Debug();
             });
 
@@ -360,7 +371,7 @@ namespace AkkaSim
                 }
                 //_CurrentInstructions++;
                 _InstructionStore.Add(m.Key, m);
-                _Logger.Log(LogLevel.Trace ," {arg1} DO ++ Instructions: {arg2} Type: {arg3} | Sender: {arg4} | Target: {arg5}", new object[] {  m.Key , _InstructionStore.Count(), m.GetType().ToString(), Sender.Path.Name, target.Path.Name });
+                _Logger.Log(LogLevel.Trace ,"Time[{arg1}] | {arg2} | DO ++ | Instructions: {arg2} | Type: {arg3} | Sender: {arg4} | Target: {arg5}", new object[] { TimePeriod, m.Key , _InstructionStore.Count(), m.GetType().ToString(), Sender.Path.Name, target.Path.Name });
             });
         }
 

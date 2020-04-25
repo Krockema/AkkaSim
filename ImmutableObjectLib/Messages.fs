@@ -81,5 +81,15 @@ type public WorkItem(workItem) =
     // Third Way requierd Extension.
     //// interface ICloneable with 
     ////     member this.Clone() = box (new WorkItem(workItem = this.WorkItem))
+  
+    type public ImmutableObject =
+        { ChangeMe : bool
+        } 
 
-
+    type public ImmutableWrapper =
+        { Key : Guid
+          Name : string
+          mutable ObjectToChange : ImmutableObject
+        } 
+        member this.UpdateName name = { this with Name = name } 
+        member this.Set value = this.ObjectToChange <- { ChangeMe = value }

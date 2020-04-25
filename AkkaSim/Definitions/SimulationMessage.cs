@@ -39,7 +39,8 @@ namespace AkkaSim.Definitions
             Stop,
             Done,
             Finish,
-            IsReady
+            IsReady,
+            HeartBeat
         }
 
         /// <summary>

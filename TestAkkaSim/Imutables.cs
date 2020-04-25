@@ -39,5 +39,20 @@ namespace TestAkkaSim
             Assert.True(beforeAdd == 0);
             Assert.True(listof.First().List.Count == 1);
         }
+
+        [Fact]
+        public void TestMutableElementInFSharp()
+        {
+            var immutableObject = new ImmutableWrapper(Guid.NewGuid(), "Adam", new ImmutableObject(false));
+
+            var objectCopyByChange = immutableObject.UpdateName("Eva");
+
+            Assert.NotEqual(immutableObject.Name, objectCopyByChange.Name);
+            Assert.Equal(immutableObject.ObjectToChange.ChangeMe, objectCopyByChange.ObjectToChange.ChangeMe);
+
+            immutableObject.Set(true);
+
+            Assert.NotEqual(immutableObject.ObjectToChange.ChangeMe, objectCopyByChange.ObjectToChange.ChangeMe);
+        }
     }
 }
