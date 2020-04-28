@@ -3,8 +3,6 @@ using AkkaSim.Interfaces;
 using AkkaSim.Definitions;
 using System;
 using System.Collections.Generic;
-using Akka.Event;
-using Akka.Logger.NLog;
 using AkkaSim.Logging;
 using NLog;
 using static AkkaSim.Definitions.SimulationMessage;
@@ -101,6 +99,7 @@ namespace AkkaSim
         private void AdvanceTo(long time) {
             //Console.WriteLine(Self.Path + " Advancing time to " + time);
             TimePeriod = time;
+            PostAdvance();
             ReleaseMessagesForThisTimeperiod();
         }
 
@@ -137,8 +136,15 @@ namespace AkkaSim
             // Free up Space
             if (thereWasWork)
                 _messageStash.Remove(TimePeriod);
+
         }
-        
+
+        protected virtual void PostAdvance()
+        {
+
+        }
+
+
         /// <summary>
         /// Free for implementing your own behave on messages 
         /// </summary>
