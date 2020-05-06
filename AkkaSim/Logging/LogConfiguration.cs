@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -32,7 +31,8 @@ namespace AkkaSim.Logging
                             ,Layout = LogLayout
                             , KeepFileOpen = true
                             , ArchiveOldFileOnStartup = true
-                        };
+                            , ArchiveAboveSize = 5000000
+                    };
                     break;
 
                 case TargetTypes.Console:
