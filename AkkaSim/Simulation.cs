@@ -3,9 +3,6 @@ using Akka.Actor;
 using Akka.Configuration;
 using AkkaSim.Definitions;
 using System.Threading.Tasks;
-using Akka.Monitoring;
-using Akka.Monitoring.ApplicationInsights;
-using Akka.Monitoring.PerformanceCounters;
 using static AkkaSim.Definitions.SimulationMessage;
 
 namespace AkkaSim
@@ -26,11 +23,14 @@ namespace AkkaSim
 
             ActorSystem  = ActorSystem.Create(SimulationContextName, config);
             
-            if(simConfig.AddApplicationInsights)
-            {
-               var monitor = new ActorAppInsightsMonitor(SimulationContextName);
-               var monitorExtension = ActorMonitoringExtension.RegisterMonitor(ActorSystem, monitor);
-            }
+            // 
+            // ********* Not Ready Yet ******************* /// 
+            //
+            // if(simConfig.AddApplicationInsights)
+            // {
+            //    var monitor = new ActorAppInsightsMonitor(SimulationContextName);
+            //    var monitorExtension = ActorMonitoringExtension.RegisterMonitor(ActorSystem, monitor);
+            // }
 
             simConfig.Inbox = Inbox.Create(ActorSystem);
             SimulationContext = ActorSystem.ActorOf(Props.Create(() => new SimulationContext(simConfig)), SimulationContextName);

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Akka.Actor;
-using Akka.Monitoring;
 using AkkaSim;
 using AkkaSim.Definitions;
 using Xunit;
@@ -25,8 +24,8 @@ namespace TestAkkaSim
                 , addApplicationInsights: true
                 , interruptInterval: 120);
             var sim = new Simulation(simConfig);
-            ActorMonitoringExtension.Monitors(sim.ActorSystem).IncrementActorCreated();
-            ActorMonitoringExtension.Monitors(sim.ActorSystem).IncrementMessagesReceived();
+            // ActorMonitoringExtension.Monitors(sim.ActorSystem).IncrementActorCreated();
+            // ActorMonitoringExtension.Monitors(sim.ActorSystem).IncrementMessagesReceived();
             return sim;
         }
 
