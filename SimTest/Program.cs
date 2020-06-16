@@ -36,8 +36,8 @@ namespace SimTest
 
             SimulationConfig simConfig = new SimulationConfig(debugAkka: false
                 , debugAkkaSim: true
-                , addApplicationInsights: false
-                , interruptInterval: 120);
+                , interruptInterval: 120
+                , timeToAdvance: TimeSpan.FromSeconds(0));
             var sim = new Simulation(simConfig);
             var r = new Random();
 

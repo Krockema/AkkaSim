@@ -2,7 +2,7 @@
 using Akka.Actor;
 using AkkaSim.Definitions;
 
-namespace AkkaSim
+namespace AkkaSim.SpecialActors
 {
     /// <summary>
     /// A Time Monitor that does perform an injected Action on TimeAdvance event.

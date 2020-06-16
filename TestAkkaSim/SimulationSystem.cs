@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Akka.Actor;
 using AkkaSim;
 using AkkaSim.Definitions;
@@ -11,18 +12,24 @@ namespace TestAkkaSim
 {
     public class SimulationSystem : TestKit
     {
-        public static IEnumerable<object[]> GetMemberData()
+        public static IEnumerable<object[]> GetTestData()
         {
-            yield return new object[]{ SimulationCreator(debugMode: false) };
-            yield return new object[]{ SimulationCreator(debugMode: true) };
+            yield return new object[]{ SimulationCreator(debugMode: false, 0) };
+            yield return new object[]{ SimulationCreator(debugMode: true, 0) };
         }
 
-        public static Simulation SimulationCreator(bool debugMode)
+        public static IEnumerable<object[]> GetDelayTestData()
+        {
+            yield return new object[] { SimulationCreator(debugMode: false, 10) };
+        }
+
+
+        public static Simulation SimulationCreator(bool debugMode, long timeToAdvance)
         {
             SimulationConfig simConfig = new SimulationConfig(debugAkka: false
                 , debugAkkaSim: debugMode
-                , addApplicationInsights: true
-                , interruptInterval: 120);
+                , interruptInterval: 120
+                , TimeSpan.FromMilliseconds(timeToAdvance));
             var sim = new Simulation(simConfig);
             // ActorMonitoringExtension.Monitors(sim.ActorSystem).IncrementActorCreated();
             // ActorMonitoringExtension.Monitors(sim.ActorSystem).IncrementMessagesReceived();
@@ -31,14 +38,21 @@ namespace TestAkkaSim
 
 
         [Theory]
-        [MemberData(nameof(GetMemberData))]
+        [MemberData(nameof(GetTestData))]
         public void IsStarting(Simulation simulation)
         {
             Assert.True(simulation.IsReady());
+            
+            var task = simulation.RunAsync();
+            Within(TimeSpan.FromSeconds(3), async () =>
+            {
+                await task;
+                Assert.False(task.IsCompletedSuccessfully);
+            });
         }
 
         [Theory]
-        [MemberData(nameof(GetMemberData))]
+        [MemberData(nameof(GetTestData))]
         public void MessageCurrentTime(Simulation simulation)
         {
             var ping = simulation.ActorSystem.ActorOf<PingBackAndForward>();
@@ -59,7 +73,7 @@ namespace TestAkkaSim
         }
 
         [Theory]
-        [MemberData(nameof(GetMemberData))]
+        [MemberData(nameof(GetTestData))]
         public void MessageScheduled(Simulation simulation)
         {
             var source = this.CreateTestProbe();

@@ -6,8 +6,7 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Akka.IO;
+using AkkaSim.SpecialActors;
 using static AkkaSim.Definitions.SimulationMessage;
 
 namespace AkkaSim
@@ -21,7 +20,7 @@ namespace AkkaSim
         // for Debugging Mode
         public Dictionary<Guid, ISimulationMessage> _InstructionStore = new Dictionary<Guid, ISimulationMessage>();
         public Dictionary<long, Dictionary<Guid, ISimulationMessage>> _FeatureStore = new Dictionary<long, Dictionary<Guid, ISimulationMessage>>();
-        private Logger _Logger = LogManager.GetLogger(TargetNames.LOG_AKKA);
+        private readonly Logger _logger = LogManager.GetLogger(TargetNames.LOG_AKKA);
 
         private SimulationConfig _SimulationConfig { get; }
         
@@ -45,7 +44,8 @@ namespace AkkaSim
         private long TimePeriod { get; set; }
 
         /// <summary>
-        /// Check for DebugMode that the simulation System is not running empty.
+        /// For Normal Mode it regulates Simulation Speed
+        /// For DebugMode you can break at each Beat to check simulation System is not running empty, waiting or looping.
         /// </summary>
         private IActorRef Heart { get; set; }
 
@@ -62,11 +62,11 @@ namespace AkkaSim
         {
             #region init
             _SimulationConfig = config;
+            Heart = Context.ActorOf(HeartBeat.Props(config.TimeToAdvance));
             #endregion init
 
             if (config.DebugAkkaSim)
             {
-                Heart = Context.ActorOf(HeartBeat.Props());
                 Become(DebugMode);
             } else
             {
@@ -99,8 +99,9 @@ namespace AkkaSim
                 if (_CurrentInstructions == 0)
                 {
                     _IsRunning = true;
-                    _nextInterupt = _nextInterupt + _SimulationConfig.InterruptInterval;
+                    _nextInterupt += _SimulationConfig.InterruptInterval;
                     _SimulationConfig.Inbox.Receiver.Tell(SimulationState.Started);
+                    Systole();
                     Advance();
                 }
                 else
@@ -109,6 +110,11 @@ namespace AkkaSim
                     Context.Self.Tell(s);
                 }
 
+            });
+
+            Receive<Command>(s => s == Command.HeartBeat, s =>
+            {
+                Diastole();
             });
 
             // Determine when The Simulation is Done.
@@ -168,12 +174,12 @@ namespace AkkaSim
             {
                 LogInterceptor(m.Message);
 
-                var sheduleAt = m.Delay + TimePeriod;
+                var scheduleAt = m.Delay + TimePeriod;
 
-                if (_FeaturedInstructions.TryGetValue(sheduleAt, out long value))
-                    _FeaturedInstructions[sheduleAt] = _FeaturedInstructions[sheduleAt] + 1;
+                if (_FeaturedInstructions.TryGetValue(scheduleAt, out long value))
+                    _FeaturedInstructions[scheduleAt] = _FeaturedInstructions[scheduleAt] + 1;
                 else
-                { _FeaturedInstructions.Add(sheduleAt, 1); }
+                { _FeaturedInstructions.Add(scheduleAt, 1); }
                 
                 m.Message.Target.Forward(m);
             });
@@ -200,9 +206,30 @@ namespace AkkaSim
             });
         }
 
+        /// <summary>
+        /// Starts Heart Beat for normal mode that limits simulation Speed
+        /// </summary>
+        private void Systole()
+        {
+            if (_SimulationConfig.TimeToAdvance.Ticks == 0 || !_IsRunning) 
+                return;
+            Heart.Tell(Command.HeartBeat, Self);
+            _CurrentInstructions++;
+        }
+
+        /// <summary>
+        /// End of an Heart Beat cycle for normal 
+        /// </summary>
+        private void Diastole()
+        {
+            _CurrentInstructions--;
+            Advance();
+            Systole();
+        }
+
         private void Advance()
         {
-            if (_IsRunning && !_IsComplete && _CurrentInstructions == 0)
+            if (_CurrentInstructions == 0 && _IsRunning && !_IsComplete)
             {
                 if (_FeaturedInstructions.Count != 0)
                 {
@@ -312,7 +339,7 @@ namespace AkkaSim
                 var msg = ((ISimulationMessage) c.Message);
                 if (!_InstructionStore.Remove(msg.Key))
                     throw new Exception("Failed to remove message from Instruction store");
-                _Logger.Log(LogLevel.Trace ,"| Time[{arg1}] | {arg2} | --Done | Messages Left {arg3} ", new object[] { TimePeriod, msg.Key, _InstructionStore.Count() });
+                _logger.Log(LogLevel.Trace ,"| Time[{arg1}] | {arg2} | --Done | Messages Left {arg3} ", new object[] { TimePeriod, msg.Key, _InstructionStore.Count() });
                 Advance_Debug();
             });
 
@@ -320,7 +347,7 @@ namespace AkkaSim
             {
                 // Console.WriteLine("-- Resume simulation -- !");
                 
-                _Logger.Info("Command Stop --Done {arg1} Stop", new object[] { _InstructionStore.Count() });
+                _logger.Info("Command Stop --Done {arg1} Stop", new object[] { _InstructionStore.Count() });
                 _IsRunning = false;
             });
 
@@ -329,7 +356,7 @@ namespace AkkaSim
                 if (_InstructionStore.Any() && _FeatureStore.Any())
                 //if (_CurrentInstructions == 0 && _FeaturedInstructions.Count() == 0)
                 {
-                    _Logger.Log(LogLevel.Trace ,"Simulation Finished...");
+                    _logger.Log(LogLevel.Trace ,"Simulation Finished...");
                     CoordinatedShutdown.Get(Context.System).Run(CoordinatedShutdown.ClrExitReason.Instance);
                 }
             });
@@ -371,7 +398,7 @@ namespace AkkaSim
                 }
                 //_CurrentInstructions++;
                 _InstructionStore.Add(m.Key, m);
-                _Logger.Log(LogLevel.Trace ,"Time[{arg1}] | {arg2} | DO ++ | Instructions: {arg2} | Type: {arg3} | Sender: {arg4} | Target: {arg5}", new object[] { TimePeriod, m.Key , _InstructionStore.Count(), m.GetType().ToString(), Sender.Path.Name, target.Path.Name });
+                _logger.Log(LogLevel.Trace ,"Time[{arg1}] | {arg2} | DO ++ | Instructions: {arg2} | Type: {arg3} | Sender: {arg4} | Target: {arg5}", new object[] { TimePeriod, m.Key , _InstructionStore.Count(), m.GetType().ToString(), Sender.Path.Name, target.Path.Name });
             });
         }
 
@@ -414,7 +441,7 @@ namespace AkkaSim
                 // global Tick
                 var tick = new AdvanceTo(TimePeriod);
                 Context.System.EventStream.Publish(tick);
-                _Logger.Log( LogLevel.Debug, "Move To: {TimePeriod} | open: {arg}"
+                _logger.Log( LogLevel.Debug, "Move To: {TimePeriod} | open: {arg}"
                     , new object[] { TimePeriod, _InstructionStore.Count() });
             }
         }

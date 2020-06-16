@@ -3,30 +3,36 @@ using System.Threading.Tasks;
 using Akka.Actor;
 using AkkaSim.Definitions;
 
-namespace AkkaSim
+namespace AkkaSim.SpecialActors
 {
     /// <summary>
-    /// A Time Monitor that does perform an injected Action on TimeAdvance event.
+    /// A Time Monitor that regulates the Simulation Speed.
     /// </summary>
     public class HeartBeat :  ReceiveActor
     {
-        public static Props Props()
+        private TimeSpan _timeToAdvance;
+        public static Props Props(TimeSpan timeToAdvance)
         {
-            return Akka.Actor.Props.Create(() => new HeartBeat());
+            return Akka.Actor.Props.Create(() => new HeartBeat(timeToAdvance));
         }
-        public HeartBeat()
+        public HeartBeat(TimeSpan timeToAdvance)
         {
             #region init
+            _timeToAdvance = timeToAdvance;
             #endregion
             
             Receive<SimulationMessage.Command>(dl =>
                 SendHeartBeat()
             );
+
+            Receive<TimeSpan>(tta =>
+                _timeToAdvance = tta
+            );
         }
 
         private void SendHeartBeat()
         {
-            Task.Delay(TimeSpan.FromSeconds(5)).Wait();
+            Task.Delay(_timeToAdvance).Wait();
             Sender.Tell(SimulationMessage.Command.HeartBeat);
         }
 
