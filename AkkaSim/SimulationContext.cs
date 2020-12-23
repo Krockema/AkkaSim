@@ -339,7 +339,7 @@ namespace AkkaSim
                 var msg = ((ISimulationMessage) c.Message);
                 if (!_InstructionStore.Remove(msg.Key))
                     throw new Exception("Failed to remove message from Instruction store");
-                _logger.Log(LogLevel.Trace ,"| Time[{arg1}] | {arg2} | --Done | Messages Left {arg3} ", new object[] { TimePeriod, msg.Key, _InstructionStore.Count() });
+                //_logger.Log(LogLevel.Trace ,"| Time[{arg1}] | {arg2} | --Done | Messages Left {arg3} ", new object[] { TimePeriod, msg.Key, _InstructionStore.Count() });
                 Advance_Debug();
             });
 

@@ -31,7 +31,7 @@ namespace AkkaSim.Logging
                             ,Layout = LogLayout
                             , KeepFileOpen = true
                             , ArchiveOldFileOnStartup = true
-                            , ArchiveAboveSize = 5000000
+                            , ArchiveAboveSize = 45000000
                     };
                     break;
 
