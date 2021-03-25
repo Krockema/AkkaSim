@@ -38,7 +38,6 @@ namespace AkkaSim
 
         protected override void OnReceive(object message)
         {
-            
             switch (message)
             {
                 case AdvanceTo m: _Time = m.TimePeriod;

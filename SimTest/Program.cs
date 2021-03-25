@@ -64,8 +64,7 @@ namespace SimTest
 
             // example to monitor for FinishWork Messages.
 
-            var monitor = sim.ActorSystem.ActorOf(props: Monitoring.WorkTimeMonitor
-                    .Props(time: 0),
+            var monitor = sim.ActorSystem.ActorOf(props: Monitoring.WorkTimeMonitor.Props(time: 0),
                 name: "SimulationMonitor");
 
             if (sim.IsReady())

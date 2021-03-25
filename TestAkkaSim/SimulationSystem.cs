@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Akka.Actor;
+﻿using Akka.Actor;
+using Akka.TestKit.Xunit2;
 using AkkaSim;
 using AkkaSim.Definitions;
-using Xunit;
-using Akka.TestKit.Xunit2;
+using System;
+using System.Collections.Generic;
 using TestAkkaSim.Moc;
+using Xunit;
 
 namespace TestAkkaSim
 {

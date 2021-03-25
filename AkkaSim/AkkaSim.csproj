@@ -21,4 +21,14 @@
     <PackageReference Include="Akka.Logger.NLog" Version="1.4.10" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="SimulationMonitor.cs">
+      <CopyToOutputDirectory>w3qesd</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\PublishProfiles\" />
+  </ItemGroup>
+
 </Project>
