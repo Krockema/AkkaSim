@@ -18,7 +18,6 @@ namespace AkkaSim
         private ICurrentInstructions _currentInstructions;
         
         private readonly Logger _logger = LogManager.GetLogger(TargetNames.LOG_AKKA);
-        private readonly bool _debugMode = false;
 
         private SimulationConfig _SimulationConfig { get; }
         
@@ -48,11 +47,6 @@ namespace AkkaSim
         private IActorRef Heart { get; set; }
         
         /// <summary>
-        /// indiates when to wait for Systole
-        /// </summary>
-        private bool waitBeat { get; set; }
-
-        /// <summary>
         /// Probe Constructor for Simulation context
         /// </summary>
         /// <returns>IActorRef of the SimulationContext</returns>
@@ -65,12 +59,12 @@ namespace AkkaSim
         {
             #region init
             _SimulationConfig = config;
+            _featuredInstructions = InstructionStoreFactory.CreateFeatureStore(config.DebugAkkaSim);
+            _currentInstructions = InstructionStoreFactory.CreateCurrent(config.DebugAkkaSim);
             Heart = Context.ActorOf(HeartBeat.Props(config.TimeToAdvance));
             #endregion init
 
-            _debugMode = config.DebugAkkaSim;
-            _featuredInstructions = InstructionStoreFactory.CreateFeatureStore(config.DebugAkkaSim);
-            _currentInstructions = InstructionStoreFactory.CreateCurrent(config.DebugAkkaSim);
+
 
             Become(NormalMode);
         }
@@ -150,8 +144,8 @@ namespace AkkaSim
 
             Receive<Done>(c =>
             {
-                //Console.WriteLine("--");var msg = ((ISimulationMessage) c.Message);
-                if (!_currentInstructions.Remove(msg: c.Key))
+                var msg = ((ISimulationMessage) c.Message);
+                if (!_currentInstructions.Remove(msg: msg.Key))
                     throw new Exception("Failed to remove message from Instruction store");
                 Advance();
             });
@@ -182,7 +176,7 @@ namespace AkkaSim
                     instructions.Add(m.Message.Key, m.Message);
                 else
                 {
-                    instructions = InstructionStoreFactory.CreateCurrent(_debugMode);
+                    instructions = InstructionStoreFactory.CreateCurrent(_SimulationConfig.DebugAkkaSim);
                     instructions.Add(m.Message.Key, m.Message);
                     _featuredInstructions.Add(scheduleAt, instructions);
                 }

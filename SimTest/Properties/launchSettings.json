@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SimTest": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

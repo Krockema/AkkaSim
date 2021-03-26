@@ -5,7 +5,6 @@ using SimTest.Domain;
 using SimTest.MachineQueue;
 using System;
 using System.Collections.Generic;
-using Akka.Dispatch.SysMsg;
 using LogLevel = NLog.LogLevel;
 
 namespace SimTest
@@ -27,10 +26,10 @@ namespace SimTest
 
         private static void RunSimulation()
         {
-            LogConfiguration.LogTo(TargetTypes.File, TargetNames.LOG_AGENTS, LogLevel.Info, LogLevel.Warn);
+            // LogConfiguration.LogTo(TargetTypes.File, TargetNames.LOG_AGENTS, LogLevel.Info, LogLevel.Warn);
             LogConfiguration.LogTo(TargetTypes.Console, TargetNames.LOG_AGENTS, LogLevel.Info);
             LogConfiguration.LogTo(TargetTypes.Console, TargetNames.LOG_AKKA, LogLevel.Warn);
-            LogConfiguration.LogTo(TargetTypes.File, TargetNames.LOG_AKKA, LogLevel.Trace);
+            // LogConfiguration.LogTo(TargetTypes.File, TargetNames.LOG_AKKA, LogLevel.Trace);
             //InternalLogger.LogToConsole = true;
             //InternalLogger.LogLevel = LogLevel.Trace;
 
@@ -41,7 +40,7 @@ namespace SimTest
             var sim = new Simulation(simConfig);
             var r = new Random();
 
-            Console.ReadKey();
+            
 
             var jobDistributor =
                 sim.ActorSystem.ActorOf(MachineJobDistributor.Props(sim.ActorSystem.EventStream, sim.SimulationContext, 0),
@@ -66,7 +65,8 @@ namespace SimTest
 
             var monitor = sim.ActorSystem.ActorOf(props: Monitoring.WorkTimeMonitor.Props(time: 0),
                 name: "SimulationMonitor");
-
+            Console.ReadKey();
+            Console.WriteLine("Systen is running!");
             if (sim.IsReady())
             {
                 var terminated = sim.RunAsync();
@@ -87,7 +87,12 @@ namespace SimTest
                 , Name = "Table"
                 , AssemblyDuration = 5
                 , Quantity = 1
-                , Materials = new List<Material> { new Material { Id = 2, Name = "Leg", AssemblyDuration = 3, ParrentMaterialID = 1, Quantity = 4, IsReady = true } }
+                , Materials = new List<Material> { new Material { Id = 2
+                                                                , Name = "Leg"
+                                                                , AssemblyDuration = 3
+                                                                , ParrentMaterialID = 1
+                                                                , Quantity = 4
+                                                                , IsReady = true } }
             };
         }
     }

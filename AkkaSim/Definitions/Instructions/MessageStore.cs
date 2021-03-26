@@ -21,8 +21,7 @@ namespace AkkaSim.Definitions.Instructions
 
         public bool Remove(Guid msg)
         {
-            _store.Remove(msg);
-            return true;
+            return _store.Remove(msg);
         }
 
         public void WaitForDiastole(bool token)
