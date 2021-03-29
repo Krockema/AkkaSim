@@ -39,7 +39,8 @@ namespace AkkaSim
         /// Contains the current simulation Time
         /// </summary>
         private long TimePeriod { get; set; }
-
+        private TimeSpan Time { get; }
+        private DateTime DateTime { get; }
         /// <summary>
         /// For Normal Mode it regulates Simulation Speed
         /// For DebugMode you can break at each Beat to check simulation System is not running empty, waiting or looping.
